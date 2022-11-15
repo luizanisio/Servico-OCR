@@ -1,0 +1,59 @@
+	<!-- Modal -->
+	<div class="modal fade" id="dicas" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+            <a href="https://github.com/luizanisio/Servico-OCR" target="_blank"><i class="fas fa-info-circle"></i> Serviço OCR - clique e saiba mais...</a>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			</div>
+			<div class="modal-body">
+                <table class="table table-hover table-sm small">
+                    <thead>
+                     <tr><th>Recurso</th><th>Descrição</th></tr>
+                    </thead>
+                    <tbody>
+                     <tr><td>PDF</td><td>Extrai a imagem das páginas em 500 DPI</td></tr>
+                     <tr><td>JPG, PNG, TIFF</td><td>Analisa a página conforme enviada</td></tr>
+                     <tr><td>Exemplos</td><td>Arquivos disponíveis na pasta "exemplos" do serviço</td></tr>
+                     <tr><td>Cache</td><td>A última análise do arquivo é guardada em cache por 5 dias, avaliando o hash do arquivo para usar o cache</td></tr>
+                     <tr><td>Páginas</td><td>Identifica se é A4, Legal, Carta, Quadrada ou Faixa (longa). A4 é o padrão.</td></tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-hover table-sm small">
+                        <thead>
+                         <tr><th>Segmentos</th><th>Descrição</th></tr>
+                        </thead>
+                        <tbody>
+                         <tr><td>Estampa</td><td>identificado pela margem 3cm do papel identificado</td></tr>
+                     <tr><td>Cabeçalho</td><td>identificado pela margem 3cm do papel identificado ou por repetições nas páginas</td></tr>
+                     <tr><td>Rodapé</td><td>identificado pela margem 2,5cm do papel identificado ou por repetições nas páginas</td></tr>
+                     <tr><td>Citação</td><td>identificado pela margem 5cm do papel identificado e a margem direita curta</td></tr>
+                     <tr><td>Folha</td><td>identificado pelo cruzamento de estampa com cabeçalho ou rodapé</td></tr>
+                     <tr><td>Título</td><td>identificado pelo tamanho acima do tamanho médio das linhas</td></tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-hover table-sm small">
+                    <thead>
+                     <tr><th>Todo</th><th>Descrição</th></tr>
+                    </thead>
+                    <tbody>
+                     <tr><td>Apresentação das imagens</td><td>Apresentar as imagens extraídas para análise dos segmnetos</td></tr>
+                     <tr><td>Apresentação do json</td><td>Apresentar o json de extração para análise e conferência</td></tr>
+                     <tr><td>API</td><td>Permitir receber solicitações e retornar trechos com filtros específicos</td></tr>
+                     <tr><td>Treinamento</td><td>Exportar palavras com baixa confiança para futuros treinamentos</td></tr>
+                     <tr><td>Performance</td><td>Uso de threads e processos para reconhecimento das páginas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+			<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+			</div>
+		</div>
+		</div>
+	</div>
+    <button type="button" class="btn btn-outline-dark btn-sm" data-toggle="modal" data-target="#dicas"><small><i class="fas fa-info-circle"></i> Dicas</small></button>
+	<!-- Modal -->

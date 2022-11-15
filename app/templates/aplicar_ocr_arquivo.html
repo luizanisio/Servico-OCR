@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+{{ super() }}
+	<!-- Form -->
+	<div class="container">
+		<form class="text-center" style="color: #757575;" action="{{ url_for('frm_analisar_arquivo') }}" method="post" enctype = "multipart/form-data">
+			<div class="card">
+				<!--Card content-->
+				<div class="card-body px-lg-5 pt-0">
+					<div class="alert alert-info row" id="esconder2" style="display: none">
+						Analisando arquivo, aguarde ... 
+					</div>
+					<div class="card" id="esconder1">
+						<div class="card-header">{% include "ajuda.html" %} - <b>Prova de Conceito:</b> Ocerização de Arquivos Imagem ou PDF</div>
+						<div class="card-body">
+							<div class="custom-control">
+								<input type = "file" name = "pdf" />
+								&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								Exemplo: 
+								<select class="selectpicker" data-width="fit"  name="exemplo" id="exemplo">
+									{% for exemplo in exemplos %}		
+									<option value="{{exemplo[0]}}" {{exemplo[1]}}>{{exemplo[0]}}</option>
+									{% endfor %}		
+								 </select>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="custom-control custom-switch">
+									<input type="checkbox" class="custom-control-input" {{com_cabecalho}} name="com_cabecalho" id="com_cabecalho" />
+									<label class="custom-control-label" for="com_cabecalho"> Cabeçalho/Rodapé </label>
+									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								</div>		
+								<div class="custom-control custom-switch">
+									<input type="checkbox" class="custom-control-input" {{com_estampas}} name="com_estampas" id="com_estampas" />
+									<label class="custom-control-label" for="com_estampas"> Estampas </label>
+									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								</div>		
+								<div class="custom-control custom-switch">
+									<input type="checkbox" class="custom-control-input" {{com_citacoes}} name="com_citacoes" id="com_citacoes" />
+									<label class="custom-control-label" for="com_citacoes"> Citações </label>
+									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								</div>		
+								<div class="custom-control custom-switch">
+									<input type="checkbox" class="custom-control-input" {{ignorar_cache}} name="ignorar_cache" id="ignorar_cache" />
+									<label class="custom-control-label" for="ignorar_cache"> Ignorar Cache </label>
+									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								</div>		
+								<div class="custom-control">
+									<input name='submit' type = "submit" value="Analisar" onclick="$('#esconder1,#esconder2').toggle();"/>
+								</div>
+						   </div>
+						</div>
+						{% if texto_ocr %}
+							{% include "paginas_ocr.html" %}
+						{% endif %}
+					</div>
+				</div>
+		
+			</div>
+		</form>
+	</div>
+
+
+
+{% endblock content %}

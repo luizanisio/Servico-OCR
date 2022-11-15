@@ -1,0 +1,7 @@
+#python-poppler - vem no tesseract
+pytesseract==0.3.10
+opencv-python==4.6.0.66
+
+# ler e gravar PDF
+PyPDF2==2.11.1
+pdf2image==1.16.0
