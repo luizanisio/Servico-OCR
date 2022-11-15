@@ -13,4 +13,20 @@
 - acionamento por api para uso em outros projetos
 - criação de componente para reaproveitamento
 
+## dependências para o linux - Testado WSL com Debian
+- sudo apt-get update
 
+- para a manipulação de imagens pelo Pillow
+  - sudo apt-get install poppler-utils 
+
+- para opencv
+  - sudo apt-get install ffmpeg libsm6 libxext6  -y  
+  - sudo apt-get install libgl1
+
+- tesseract
+  - sudo apt-get install tesseract-ocr tesseract-ocr-por  
+
+## Ghostscript para compactação
+- nem sempre resolve compactar o PDF gerado, mas para imagens muito simples (PB) pode compactar bem
+- vai ser usado quando gerar um PDF de imagem ou de outro PDF
+  - sudo apt-get install ghostscript
