@@ -12,6 +12,29 @@
 
 ![exemplo recorte tela serviço](./img/servico_ocr.png?raw=true "Exemplo recorte tela serviço")
 
+## Exemplo de extração e metadados gerados
+```
+ [ {'pagina'     : 0 ...n número da página 
+    'box'        : 0 ...n reinicia a cada página
+    'id'         : 0 ...n até o último box (na ordem para leitura)
+    'pagina_la' : [500,75], -> largura e altura da página
+    'pagina_tipo' : A4, Legal .. -> tipo da página identificado
+    'box_xyla'     : [10,14,30,45], -> x,y  largura, altura da caixa
+    'alt_linhas'   : 23, -> média da altura das linhas do box
+    'alt_linhas_med' : 30  -> média da altura das linhas da página
+    'qtd_linhas'   : 3,  -> linhas da caixa
+    'qtd_boxes'    : 2,  -> boxes na página
+    'qtd_letras'   : 44, -> letras únicas
+    'qtd_palavras' : 22, -> palavras únicas
+    'margens_edsi' : [5,5,3,7] -> margens até a caixa mais próxima - esquerda, direita, superior, inferior
+    'bordas'     : [D,E,S,I..] -> Direita, Esquerda, Superior, Inferior (está em uma ou mais bordas)
+    'texto' : 'bla bla bla',
+    'tipo_sugerido': ... descrição do motivo do tipo sugerido (bordas, repetição etc)
+    'tipo': C, R, T... Cabeçalho, Rodapé, Título, Folha, Citação ...
+     },
+  ]
+```
+
 ## TODO
 - apresentação da análise feita nas imagens enviadas para o Tesseract
 - exportação de trechos para fine tunning do Tesseract
