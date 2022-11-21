@@ -58,12 +58,10 @@
 - para a manipulação de imagens pelo Pillow
   - sudo apt-get install poppler-utils 
 
-- para opencv
-  - sudo apt-get install ffmpeg libsm6 libxext6  -y  
-  - sudo apt-get install libgl1
-
 - tesseract
   - sudo apt-get install tesseract-ocr tesseract-ocr-por  
+  - sudo apt-get install libtesseract-dev -y
+  - sudo apt-get install -y libleptonica-dev 
 
 ## Ghostscript para compactação
 - nem sempre resolve compactar o PDF gerado, mas para imagens muito simples (PB) pode compactar bem
