@@ -1,0 +1,34 @@
+{% if download_arquivo %}
+    {% if download_arquivo.get('tempo') %}
+        <div class="alert alert-info" role="alert">
+          Tempo de processamento: {{ download_arquivo['tempo'] }} minutos
+        </div>		
+    {% endif %}
+
+    <div class="card">
+      <div class="card-header">Documento com status: {{download_arquivo['status']}}
+      </div>
+    </div>
+
+    <input type="hidden" name="id" value="{{download_arquivo.get('id')}}">
+    <table class="table table-hover table-sm small">
+        <thead>
+          <tr><th>Arquivo</th><th>Status</th><th>Início</th><th>Fim</th><th>Original</th><th>OCR</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            {% if download_arquivo.get('download') %}
+              <td><a href="{{ url_for('srv_download_arquivo', id = download_arquivo['id']) }}">{{download_arquivo.get('nome_real')}}</a></td>
+            {% else %}
+              <td>{{download_arquivo.get('nome_real')}}</td>
+            {% endif %}		
+              <td>{{download_arquivo.get('status')}}</td>
+              <td>{{download_arquivo.get('inicio')}}</td>
+              <td>{{download_arquivo.get('fim')}}</td>
+              <td>{{download_arquivo.get('tamanho_inicial',0)}} Kb</td>
+              <td>{{download_arquivo.get('tamanho_final',0)}} Kb</td>
+          </tr>
+        </tbody>
+    </table>
+
+{% endif %}		
