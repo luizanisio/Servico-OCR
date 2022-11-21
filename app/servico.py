@@ -11,6 +11,7 @@ from jinja2 import TemplateNotFound
 import os
 import json
 from datetime import datetime
+import traceback
 
 ###################################################################
 # controller
@@ -62,7 +63,7 @@ def srv_download_arquivo():
        if os.path.isfile(arquivo_pdf):
           nome = status.get('nome_real', os.path.split(arquivo_pdf)[1] )
           print(f'Enviando arquivo: "{arquivo_pdf}" como "{nome}" ')
-          return send_file(arquivo_pdf, as_attachment=True, attachment_filename =nome)
+          return send_file(arquivo_pdf, as_attachment=True, attachment_filename =nome, cache_timeout=10)
     return controller.alerta(f'Arquivo não encontrado para download id={_id}')
 
 #############################################################################
@@ -118,7 +119,7 @@ def frm_analisar_arquivo():
                                                             citacoes = com_citacoes,
                                                             saida_pdf = saida_pdf)
         except Exception as e:
-            res = {'erro': f'ERRO: {e}' }
+            res = {'erro': f'ERRO: {e}<hr>{traceback.format_exc()}' }
 
         if res.get('erro'):
             res['html'] = controller.alerta(res['erro'])
