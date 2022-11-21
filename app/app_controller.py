@@ -73,8 +73,13 @@ class Controller():
              hash_arquivo = Util.hash_file(arquivo_entrada)
              destino_entrada = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.pdf')
              destino_json = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.json')
+             #nome real usado para download
+             nome_real = os.path.split(arquivo_entrada)[1]
+             nome_real = nome_real[6:] if nome_real[:6].lower() == 'cache_' else nome_real
+             # json com status inicial da solicitação
+             # esse json vai acompanhar o arquivo PDF nas pastas de processamento, saída e erro
              json_status_inicial = {'status': 'incluído na pasta de entrada', 
-                                    'nome_real': os.path.split(arquivo_entrada)[1],
+                                    'nome_real': nome_real,
                                     'inicio': Util.data_hora_str(),
                                     'tamanho_inicial' : round(os.path.getsize(arquivo_entrada)/1024,2)}
              if ignorar_cache:
