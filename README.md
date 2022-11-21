@@ -51,6 +51,8 @@
 - aplicação de extrações de entidade nas caixas de texto, respeitando o posicionamento
 - identificar início e fim de caracteres de cada box, para melhor posicionamento de extrações
 - melhor compactação de arquivos PDF com OCR
+- análise se o PDF de entrada precisa de OCR ou pode ser analisado (estampas, cabeçalho, rodapé, citações) com o texto existente
+- possibilidade de recriar a camada de OCR no pdf original sem precisar criar um novo que pode ficar maior
 
 ## dependências para o linux - Testado WSL com Debian
 - sudo apt-get update
