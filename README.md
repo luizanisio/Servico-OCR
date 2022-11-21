@@ -9,8 +9,16 @@
 - As regiões estão sendo identificadas por posicionamento (estampas e citações) ou repetição e posicionamento (cabeçalhos e rodapés).
 - A tela apresenta o motivo da identificação da região
 - Pode-se filtrar o retorno, removendo regiões não desejadas
+- Processo em background realizando OCR de PDF para PDF e atualizando o status 
+  - pode-se usar o arquivo `util_processar_pasta.py` para realizar um processamento contínuo do tipo pasta de entrada e pasta de saída:
+    - .\entrada
+    - .\processamento
+    - .\erro
+    - .\saida
+  - `python util_processar_pasta.py` 
+> 💡 <sub>Nota: será feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para HTML</sub>
 
-![exemplo recorte tela serviço](./img/servico_ocr.png?raw=true "Exemplo recorte tela serviço")
+![exemplo recorte tela serviço](./img/servico_ocr_2.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
 
 ## Exemplo de extração e metadados gerados
 ```
@@ -42,6 +50,7 @@
 - criação de componente para reaproveitamento
 - aplicação de extrações de entidade nas caixas de texto, respeitando o posicionamento
 - identificar início e fim de caracteres de cada box, para melhor posicionamento de extrações
+- melhor compactação de arquivos PDF com OCR
 
 ## dependências para o linux - Testado WSL com Debian
 - sudo apt-get update
@@ -58,5 +67,5 @@
 
 ## Ghostscript para compactação
 - nem sempre resolve compactar o PDF gerado, mas para imagens muito simples (PB) pode compactar bem
-- vai ser usado quando gerar um PDF de imagem ou de outro PDF
+- é usado pelo serviço de processamento em background após gerar um PDF com camada de OCR
   - sudo apt-get install ghostscript
