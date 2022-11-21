@@ -35,11 +35,11 @@ def get_post(req:request):
     return res
 
 ###################################################################
-# limpeza do cache
+# health para monitoramento do serviço 
 @app.route(f'{PATH_API}health', methods=['GET'])
 @app.route('/health', methods=['GET'])
 def get_health():
-    return jsonify({'ok'})
+    return jsonify({'ok' : True})
 
 ###################################################################
 # recebe um PDF ou imagem
