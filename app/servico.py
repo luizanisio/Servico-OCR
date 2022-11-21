@@ -47,7 +47,7 @@ def get_health():
 @app.route(f'{PATH_API}analisar_arquivo', methods=['GET','POST'])
 def srv_analisar_arquivo():
     dados = get_post(request)
-    return jsonify( {'retorno': 'uso simplificado de API - ainda não imlementado'} )
+    return jsonify( {'retorno': 'uso simplificado de API - ainda não implementado'} )
 
 ###################################################################
 # recebe um hash e retorna o arquivo se estiver pronto
