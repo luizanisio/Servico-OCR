@@ -9,6 +9,9 @@ opencv-python-headless==4.6.0.66
 PyPDF2==2.11.1
 pdf2image==1.16.0
 
+# utilitários
+filelock==3.8.0
+
 # serviço
 Flask==2.1.0 
 Flask-Cors==3.0.10
