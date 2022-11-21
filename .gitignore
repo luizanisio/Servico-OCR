@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# arquivos do projeto
+app/temp/
+app/ocr_entrada/
+app/ocr_erro/
+app/ocr_processando/
+app/ocr_saida/
