@@ -28,24 +28,28 @@
 						<div class="card-body">
 							<div class="row">
 								<div class="custom-control custom-switch">
-									<input type="checkbox" class="custom-control-input" {{com_cabecalho}} name="com_cabecalho" id="com_cabecalho" />
+									<input type="checkbox" class="custom-control-input" {{saida_pdf}} name="saida_pdf" id="saida_pdf" onclick="$('#chk_html1,#chk_html2,#chk_html3').toggle();"/>
+									<label class="custom-control-label" for="saida_pdf"> Gerar PDF </label>
+									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+								</div>		
+								<div class="custom-control custom-switch" id="chk_html1" style="{{displaychkhtml}}">
+									<input type="checkbox" class="custom-control-input" {{com_cabecalho}} name="com_cabecalho" id="com_cabecalho"/>
 									<label class="custom-control-label" for="com_cabecalho"> Cabeçalho/Rodapé </label>
 									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
 								</div>		
-								<div class="custom-control custom-switch">
-									<input type="checkbox" class="custom-control-input" {{com_estampas}} name="com_estampas" id="com_estampas" />
+								<div class="custom-control custom-switch" id="chk_html2" style="{{displaychkhtml}}">
+									<input type="checkbox" class="custom-control-input" {{com_estampas}} name="com_estampas" id="com_estampas"/>
 									<label class="custom-control-label" for="com_estampas"> Estampas </label>
 									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
 								</div>		
-								<div class="custom-control custom-switch">
-									<input type="checkbox" class="custom-control-input" {{com_citacoes}} name="com_citacoes" id="com_citacoes" />
+								<div class="custom-control custom-switch" id="chk_html3" style="{{displaychkhtml}}">
+									<input type="checkbox" class="custom-control-input" {{com_citacoes}} name="com_citacoes" id="com_citacoes"/>
 									<label class="custom-control-label" for="com_citacoes"> Citações </label>
 									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
 								</div>		
 								<div class="custom-control custom-switch">
-									<input type="checkbox" class="custom-control-input" {{ignorar_cache}} name="ignorar_cache" id="ignorar_cache" />
-									<label class="custom-control-label" for="ignorar_cache"> Ignorar Cache </label>
-									&nbsp;<i class="fas fa-grip-lines-vertical"></i>&nbsp;
+									<input type="checkbox" class="custom-control-input" name="ignorar_cache" id="ignorar_cache" />
+									<label class="custom-control-label" for="ignorar_cache"> Ignorar Cache {{ignorar_cache}} </label>
 								</div>		
 								<div class="custom-control">
 									<input name='submit' type = "submit" value="Analisar" onclick="$('#esconder1,#esconder2').toggle();"/>
@@ -55,6 +59,7 @@
 						{% if texto_ocr %}
 							{% include "paginas_ocr.html" %}
 						{% endif %}
+						{% include "paginas_download.html" %}
 					</div>
 				</div>
 		
