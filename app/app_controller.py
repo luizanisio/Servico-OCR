@@ -79,6 +79,7 @@ class Controller():
              # json com status inicial da solicitação
              # esse json vai acompanhar o arquivo PDF nas pastas de processamento, saída e erro
              json_status_inicial = {'status': 'incluído na pasta de entrada', 
+                                    'id' : f'{hash_arquivo}',
                                     'nome_real': nome_real,
                                     'inicio': Util.data_hora_str(),
                                     'tamanho_inicial' : round(os.path.getsize(arquivo_entrada)/1024,2)}
@@ -88,13 +89,12 @@ class Controller():
                 status_arquivo = ProcessarOcrThread.servico().status_arquivo(hash_arquivo)
              print(f'Processar PDF "{arquivo_entrada}" >> "{destino_entrada}"')
              if not any(status_arquivo):
-                if arquivo_entrada.find('_cache.') > 0:
+                status_arquivo.update(json_status_inicial)
+                Util.gravar_json(destino_json, json_status_inicial)
+                if arquivo_entrada.find(tempdir) >= 0:
                     shutil.move(arquivo_entrada, destino_entrada)
                 else:
                     shutil.copy(arquivo_entrada, destino_entrada)
-                status_arquivo.update(json_status_inicial)
-                Util.gravar_json(destino_json, json_status_inicial)
-                status_arquivo = ProcessarOcrThread.servico().status_arquivo(hash_arquivo)
                 
              if 'status' in status_arquivo:
                 status_arquivo['tipo_folha'] = 'PDF'
