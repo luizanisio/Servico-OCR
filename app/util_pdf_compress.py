@@ -88,6 +88,8 @@ def compress_pdf(input_file_path, output_file_path, power=0):
     print("Compression by {0:.0%}.".format(ratio))
     print("Final file size is {0:.1f}MB".format(final_size / 1000000))
     print("Done.")
+    # retorna a compressão
+    return ratio
 
 
 def get_ghostscript_path():

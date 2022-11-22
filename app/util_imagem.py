@@ -34,7 +34,7 @@ def cor_imagem(imagem, converter = True):
   ratio = diff_sum/totalPixels
 
   msg = f"Image RGB Ratio is: {ratio} ==>"
-  
+
   if ratio>0.005:
      print(f"{msg} image is color", flush = True)
      if converter:
@@ -52,4 +52,15 @@ def cor_imagem(imagem, converter = True):
      return 0
 
 
+  
+def convert_image(images, img, path):
+    """Postprocessing photo.
+       https://www.webtechnika.pl/en/news/6/python-how-to-speed-up-the-algorithm-on-the-exampl/
+    """
+    images.append(path)
+    img_page = Image(image=img)
+    img_page.compression_quality = 20
+    img_page.resize(2000, 2820, Image.BICUBIC)  # zachowuje proporcje formatu A
+    img_page.alpha_channel = 'remove'
+    img_page.save(filename=path)  
 

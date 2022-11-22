@@ -241,9 +241,16 @@ def processar_arquivo(arquivos):
         except Exception as ee:
             print(f'ERRO processar_arquivo: não foi possível criar o arquivo com o a mensagem de erro de processamento {ee}, erro de processamento: {e}')
     try:
-        compress_pdf(saida_ngs, saida)
-        print(f'>>> ARQUIVO COMPRIMIDO: {entrada} --> {saida} <<<')
-        os.remove(saida_ngs)
+        r = compress_pdf(saida_ngs, saida)
+        
+        # mantém a melhor compressão
+        if r >0:
+           print(f'>>> ARQUIVO COMPRIMIDO: {entrada} --> {saida} --> ratio = {round(r,2)}<<<')
+           os.remove(saida_ngs)
+        else:
+           print(f'>>> ARQUIVO COMPRIMIDO E IGNORADO: {entrada} --> {saida} --> ratio = {round(r,2)}<<<')
+           os.remove(saida) 
+           shutil.move(saida_ngs, saida)
     except Exception as e:
         print('ERRO processar_arquivo: não foi possível usar o ghostscript para compactar o arquivo de saída')
         # o arquivo de saída fica sem compressão

@@ -20,6 +20,7 @@ import os
 
 from util_imagem import cor_imagem
 from util_pdf_compress import compress_pdf
+from util import Util
 import numpy as np
 
 def imagens_pdf(arquivo_entrada='', dpi = 300, np_array = True):
@@ -39,9 +40,10 @@ def ocr_pdf(arquivo_entrada, arquivo_saida = None):
         arquivo_saida, _ = os.path.splitext(arquivo_entrada)
         arquivo_saida = f'{arquivo_entrada}_OCR_.pdf'
 
-    pages = convert_from_path(arquivo_entrada, dpi=300)
-    for image in pages:
-        cor_imagem(image, False)
+    pages = convert_from_path(arquivo_entrada, dpi=300, thread_count=Util.cpus())
+    
+    #for image in pages:
+    #    cor_imagem(image, False)
 
     pdf_writer = PyPDF2.PdfFileWriter()
     print(f'Ocerizando arquivo:', flush=True)
@@ -68,11 +70,12 @@ if __name__ == '__main__':
     arquivo = ''
     arquivo_padrao = './exemplos/testes-extração.pdf'
     for i, arg in enumerate(sys.argv[1:]):
-        print(f"- {arg}")
+        print(f"{i} - '{arg}'")
         if os.path.isfile(arg):
             arquivo = arg
             print(f'Arquivo encontrado: {arquivo}')
             break
+
     if not arquivo:
         arquivo = arquivo_padrao
         print(f'Arquivo padrão utilizado: {arquivo}')
@@ -85,8 +88,22 @@ if __name__ == '__main__':
        print('Não implementado para arquivos diferentes de PDF') 
        exit()
 
-    arquivo_saida = ocr_pdf(arquivo)    
-    compress_pdf(arquivo_saida, arquivo_saida)
+       
+    TEMP = './temp'
+    os.makedirs(TEMP, exist_ok=True)   
+
+    # definindo nomes dos arquivos de saída na pasta temp
+    print('-------------------------------------------------------------------------------')
+    nm_saida = os.path.splitext( os.path.split(arquivo)[1] )[0]
+    arquivo_saida = os.path.join(TEMP, f'{nm_saida}_ocr.pdf')
+    arquivo_saida_ghs = os.path.join(TEMP, f'{nm_saida}_ghs.pdf')
+    ocr_pdf(arquivo, arquivo_saida)    
+    compress_pdf(arquivo_saida, arquivo_saida_ghs,2)
+    print('-------------------------------------------------------------------------------')
+    print('Arquivo original analisado: ', arquivo, 'com ', round(os.path.getsize(arquivo)/1024,2),'Kbytes')
+    print('Arquivo OCR gerado: ', arquivo_saida, 'com ', round(os.path.getsize(arquivo_saida)/1024,2),'Kbytes')
+    print('Arquivo GHS gerado: ', arquivo_saida_ghs, 'com ', round(os.path.getsize(arquivo_saida_ghs)/1024,2),'Kbytes')
+    print('-------------------------------------------------------------------------------')
 
 
     

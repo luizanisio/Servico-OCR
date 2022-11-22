@@ -9,6 +9,7 @@ import os, time
 import hashlib
 from datetime import datetime
 import json
+from multiprocessing import cpu_count
 
 HASH_BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
 class Util():
@@ -104,3 +105,9 @@ class Util():
             if len(dados)>2 and dados.find('{')>=0 and dados[-5:].find('}')>0:
                 return json.loads(dados)
         return padrao
+
+    # --- NÚMERO DE CPUS -----
+    @staticmethod
+    def cpus(uma_livre=True):
+        num_livres = 1 if uma_livre else 0
+        return cpu_count() if cpu_count() < 3 else cpu_count() - num_livres
