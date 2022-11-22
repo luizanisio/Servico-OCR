@@ -110,7 +110,7 @@ def frm_analisar_arquivo():
                 print(f'Localizando id: {id_arquivo}')
                 res = controller.status_por_id(id_arquivo)
             # foi enviado um arquivo
-            else:
+            elif tem_arquivo_enviado:
                 print('Ocerizando arquivo recebido ...')
                 res = controller.ocerizar_arquivo_recebido(request, 
                                                             ignorar_cache = ignorar_cache, 
