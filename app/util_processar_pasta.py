@@ -114,7 +114,7 @@ class ProcessarOcr():
            if arquivo.find(self.entrada)>=0:
               return 'Aguardando processamento'
            if arquivo.find(self.processando)>=0:
-              return 'Em de processamento'
+              return 'Em processamento'
            if arquivo.find(self.saida)>=0:
               return 'Processamento concluído'
            if arquivo.find(self.erro)>=0:
@@ -125,7 +125,7 @@ class ProcessarOcr():
         if os.path.isfile(os.path.join(self.entrada, _arquivo)):
             return 'Aguardando processamento'
         if os.path.isfile(os.path.join(self.processando, _arquivo)):
-            return 'Em de processamento'
+            return 'Em processamento'
         if os.path.isfile(os.path.join(self.saida, _arquivo)):
             return 'Processamento concluído'
         if os.path.isfile(os.path.join(self.erro, _arquivo)):
