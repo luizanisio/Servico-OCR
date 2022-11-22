@@ -139,6 +139,8 @@ class ProcessarOcr():
         global TEMPO_LOCK
         pastas_parada = [self.entrada, self.saida, self.entrada, './']
         arquivos_processando = Util.listar_arquivos(self.processando, 'pdf')
+        # ao reiniciar o processamento, move os arquivos que podem ter tido o processamento interrompido
+        # para a pasta de entrada para serem processados novamente
         if any(arquivos_processando):
             print(f'Movendo {len(arquivos_processando)} arquivo(s) em processamento para a pasta de entrada ...')
             for a in arquivos_processando:
@@ -146,13 +148,16 @@ class ProcessarOcr():
                     self.mover_com_controles(a,self.entrada)
                 except:
                     print(f'ERRO: não foi possível mover {a} para novo processamento')
+        # inicia a avaliação da pasta de entrada
         fila_cheia_timer = 1
         while self.__processar_continuamente__:
             # arquivos para parar o processamento
+            # se existir um desses arquivos em uma das pastas, para o serviço
             for a in self.ARQUIVOS_PARADA:
                 for p in pastas_parada:
                     self.__processar_continuamente__ = not os.path.isfile(os.path.join(p, a))
                     if not self.__processar_continuamente__:
+                        print(f'Arquivo de parada encontrado: "{os.path.join(p, a)}"')
                         break
             # encontrar arquivos e processar
             arquivos = Util.listar_arquivos(self.entrada, 'pdf')
@@ -169,6 +174,9 @@ class ProcessarOcr():
                     if fila_cheia_timer < TEMPO_LOCK:
                        fila_cheia_timer += 2
                     break
+                # arquivo incompleto - tamanho zero
+                if os.path.getsize(a) == 0:
+                    continue
                 qtd_pasta -= 1
                 fila_cheia_timer = 1
                 _entrada = a
