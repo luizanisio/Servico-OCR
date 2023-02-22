@@ -5,18 +5,23 @@
 - O objetivo é analisar qualidade, performance e regiões identificadas pelo Tesseract para permitir a criação de regras ou treinamento de modelos para identificar regiões como Citações, Estampas laterais, Cabeçalho e Rodapé. A identificação pode ser feita por regras simples, como margens em páginas padronizadas (A4, Carta, Legal etc). E também pode ser identificado por repetições de textos em áreas específicas, como cabeçalhos e rodapés.
 
 ## O que está disponível
-- Foi criado um serviço flask que recebe imagens ou PDFs e retorna uma página HTML com as regiões identificadas.
+- Foi criado um serviço flask que recebe imagens ou PDFs e processa eles em batch, permitindo acompanhar a fila de tarefas e visualizar os arquivos da extração ou baixar uma versão Markdown ou PDF da análise realizada.
 - As regiões estão sendo identificadas por posicionamento (estampas e citações) ou repetição e posicionamento (cabeçalhos e rodapés).
 - A tela apresenta o motivo da identificação da região
 - Pode-se filtrar o retorno, removendo regiões não desejadas
-- Processo em background realizando OCR de PDF para PDF e atualizando o status 
+- Processo em background realizando OCR de PDF para PDF ou PDF/PNG/JPG/TIF para HTML/MD e atualiza o status das tarefas
   - pode-se usar o arquivo `util_processar_pasta.py` para realizar um processamento contínuo do tipo pasta de entrada e pasta de saída:
     - .\entrada
+    - .\entrada_img (processa imagens ou PDFs com a saída no formato json de análise, MD e/ou HTML
     - .\processamento
+    - .\processamento_img
     - .\erro
+    - .\erro_img
     - .\saida
+    - .\saida_img
   - `python util_processar_pasta.py` 
-> 💡 <sub>Nota: será feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para HTML</sub>
+  - caso não exista, é criado o arquivo `config.json` com algumas configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros.
+> 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML</sub>
 
 ![exemplo recorte tela serviço](./img/servico_ocr_3.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
 
