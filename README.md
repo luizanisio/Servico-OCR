@@ -9,8 +9,11 @@
 - As regiões estão sendo identificadas por posicionamento (estampas e citações) ou repetição e posicionamento (cabeçalhos e rodapés).
 - A tela apresenta o motivo da identificação da região
 - Pode-se filtrar o retorno, removendo regiões não desejadas
-- Processo em background realizando OCR de PDF para PDF ou PDF/PNG/JPG/TIF para HTML/MD e atualiza o status das tarefas
-  - pode-se usar o arquivo `util_processar_pasta.py` para realizar um processamento contínuo do tipo pasta de entrada e pasta de saída:
+- O arquivo `config.json` contém configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros. Caso não exista, ele será criado com o padrão de cada configuração.
+- O campo `token` do serviço é usado para listar as tarefas do usuário, podendo ser digitado livremente ou será criado ao enviar um arquivo a primeira vez. A ideia é o usuário enviar vários arquivos no mesmo token. O usuário precisa dele para acompanhar as tarefas enviadas. Não é garantida a segurança com esse token, apenas restringe um pouco o livre acesso às tarefas entre usuários pois é só uma poc.
+- O serviço instancia a classe `ProcessarOcr` disponível no arquivo `util_processar_pasta.py` para processar continuamente as tarefas de OCR enviadas pela tela.
+- Pode-se acionar o serviço de processamento contínuo independente do serviço flask chamando `python util_processar_pasta.py` usando o `config.json` para ajustar as configurações desejadas.
+  - O processo em background realiza o OCR de PDF para PDF (pasta entrada) ou PDF/PNG/JPG/TIF para HTML/MD (pasta entrada_img) e atualiza o status das tarefas em arquivos `nome_arquivo_entrada.status.json`
     - .\entrada
     - .\entrada_img (processa imagens ou PDFs com a saída no formato json de análise, MD e/ou HTML
     - .\processamento
@@ -19,11 +22,8 @@
     - .\erro_img
     - .\saida
     - .\saida_img
-  - `python util_processar_pasta.py` 
-  - o arquivo `config.json` contém configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros. Caso não exista, ele será criado com o padrão de cada configuração.
-  - o campo `token` é usado para listar as tarefas do usuário, podendo ser digitado livremente ou será criado ao enviar um arquivo a primeira vez. A ideia é o usuário enviar vários arquivos no mesmo token. O usuário precisa dele para acompanhar as tarefas enviadas. Não é garantida a segurança com esse token, apenas restringe um pouco o livre acesso às tarefas entre usuários pois é só uma poc.
   
-> 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML</sub>
+> 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML. O arquivo fica na pasta `saida` ou `saida_img` dependendo do tipo de processamento solicitado.</sub>
 
 ![exemplo recorte tela serviço](./img/servico_ocr_20230221.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
 
