@@ -97,7 +97,7 @@ class ProcessarOcr():
         try:
             if os.path.isfile(arquivo):
                 with open(arquivo, 'r') as f:
-                     dados = json.load(f.read())
+                     dados = json.loads(f.read())
                 gravar = False
                 for chave in config.keys():
                     if not chave in dados:
