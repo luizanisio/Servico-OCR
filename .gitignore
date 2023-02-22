@@ -131,6 +131,14 @@ dmypy.json
 # arquivos do projeto
 app/temp/
 app/ocr_entrada/
+app/ocr_entrada_img/
 app/ocr_erro/
+app/ocr_erro_img/
 app/ocr_processando/
+app/ocr_processando_img/
 app/ocr_saida/
+app/ocr_saida_img/
+app/tokens/
+app/exemplos2/
+app/config.json
+*- Copia*.py
