@@ -80,7 +80,7 @@ class TokensUsuario():
         # limpa as relações token-id a cada 5 min
         # limpa as relações com mais de 10 dias
         if (self.dthr_limpeza is None) or (datetime.now() - self.dthr_limpeza).total_seconds() > 300:
-           Util.limpar_temporarios(self.tokens.pasta_tokens, dias = 10)
+           Util.limpar_temporarios(self.pasta_tokens, dias = 10)
            self.dthr_limpeza = datetime.now()
 
     def arquivo_token(self, token, id):
