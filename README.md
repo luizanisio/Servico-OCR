@@ -51,6 +51,7 @@
 ```
 
 ## TODO
+- análise de colunas (está identificando incorretamente como citação)
 - apresentação da análise feita nas imagens enviadas para o Tesseract
 - exportação de trechos para fine tunning do Tesseract
 - acionamento por api para uso em outros projetos
