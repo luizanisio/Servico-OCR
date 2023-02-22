@@ -20,7 +20,9 @@
     - .\saida
     - .\saida_img
   - `python util_processar_pasta.py` 
-  - caso não exista, é criado o arquivo `config.json` com algumas configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros.
+  - o arquivo `config.json` contém configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros. Caso não exista, ele será criado com o padrão de cada configuração.
+  - o campo `token` é usado para listar as tarefas do usuário, podendo ser digitado livremente ou será criado ao enviar um arquivo a primeira vez. A ideia é o usuário enviar vários arquivos no mesmo token. O usuário precisa dele para acompanhar as tarefas enviadas. Não é garantida a segurança com esse token, apenas restringe um pouco o livre acesso às tarefas entre usuários pois é só uma poc.
+  
 > 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML</sub>
 
 ![exemplo recorte tela serviço](./img/servico_ocr_20230221.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
