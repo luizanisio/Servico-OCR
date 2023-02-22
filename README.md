@@ -23,7 +23,7 @@
   - caso não exista, é criado o arquivo `config.json` com algumas configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros.
 > 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML</sub>
 
-![exemplo recorte tela serviço](./img/servico_ocr_3.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
+![exemplo recorte tela serviço](./img/servico_ocr_20230221.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
 
 ## Exemplo de extração e metadados gerados
 ```
