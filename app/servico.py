@@ -120,11 +120,11 @@ def frm_visualizar_arquivo():
         _ini = datetime.now()
         status = controller.get_status_id(id_arquivo) if id_arquivo else {}
         #print(f'Preparando para visualizar id = {id_arquivo} com status = {status}')
-        print('dados: ', dados)
+        # print('dados: ', dados)
         res = {}
         if (not listar) and (not atualizar):
             if exemplo or controller.request_file_send(request_file = request):
-                if (not token) and (listar or atualizar):
+                if (not token):
                     token = Util.get_token() 
                 res = controller.processar_envio_arquivo(token = token,
                                                          exemplo_ou_request= exemplo or request,

@@ -142,7 +142,7 @@ class Controller():
         return None
 
     def get_tarefas_usuario(self, token):
-        Util.limpar_temporarios(self.tokens.pasta_tokens, dias = 10)
+        self.tokens.limpar_temporarios()
         return self.tokens.listar_tarefas(token)
 
     # recebe um arquivo ou nome de um arquivo e retorna o nome
