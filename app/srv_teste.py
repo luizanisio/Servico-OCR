@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+'''
+ Autor Luiz Anísio 19/11/2022
+ teste de dependências para o serviço básico do flask
+'''
 
 from flask import Flask, jsonify, request, render_template
 from flask import render_template_string, redirect, url_for #, Markup

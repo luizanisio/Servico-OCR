@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from util import Util
+import os
+
 '''
  Autor Luiz Anísio 12/11/2022
  Constroi uma página HTML com os dicionários dos box extraídos pelo tesseract e 
- analisados pela classe util_ocr.analise_imagens_ocr
+ analisados pela classe util_ocr.AnaliseImagensOCR
  '''
 
 PAGINA_HTML_C = '''
@@ -109,6 +112,8 @@ def aimg_2_html(dados):
             v = f'Motivo da região: {v}' if v else ''
             texto = texto.replace(f'@@{c}_tt@@', f'{v}')
                         
+        texto = f'<div class="container-fluid" style="text-align:right;height:12px;"><sub><mark>Página: {len(textos_paginas)+1}</mark></sub></div>{texto}'
+
         # guarda o html da página
         textos_paginas.append(texto) 
 
@@ -165,21 +170,41 @@ def box_2_html(box):
     if box['tipo'] == 'T':
        html = '<b>'+ box['texto'] +'</b>'
     elif box['tipo'] == 'CT':
-       html = MODELO_CITACAO.replace('@@texto@@', box['texto'])
+       _texto = '\n'.join( Util.unir_paragrafos_quebrados(str(box['texto']).split('\n')) )
+       html = MODELO_CITACAO.replace('@@texto@@', _texto)
     else :
-       html = box['texto']
+       html = '\n'.join( Util.unir_paragrafos_quebrados(str(box['texto']).split('\n')) )
     return html
+
+def arquivo_aimg_2_html(arquivo_aimg):
+    if not arquivo_aimg:
+       return 
+    arquivo_html = os.path.splitext(arquivo_aimg)[0] + '.html'
+    if os.path.isfile(arquivo_html):
+       try:
+          os.remove(arquivo_html)
+       except:
+          print(f'* ATENÇÃO: Não foi possível remover o arquivo {arquivo_html}')  
+    if not os.path.isfile(arquivo_aimg):
+       return
+    analise = Util.ler_json(arquivo_aimg)
+    if any(analise):
+        html = aimg_2_html(analise)
+        try:
+            with open(arquivo_html, 'w') as f:
+                f.write(html)
+        except:
+            print(f'* ATENÇÃO: Não foi possível criar o arquivo {arquivo_html}')  
+
 
 if __name__ == '__main__':
     import sys
     import os
     import json
-    with open('./temp/testes-extração.json', 'r') as f:
-        dados = f.read()
-        dados = json.loads(dados)
 
-    html = aimg_2_html(dados)
+    arquivo = 'testes-extração.json'
+    arquivo ='Artigo Seleção por consequências B F Skinner.json'
 
-    with open('./temp/testes-extração.html', 'w') as f:
-        f.write(html)
+    arquivo_aimg_2_html(f'./temp/{arquivo}')
+
     print('Finalizado')

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+{{ super() }}
+	<!-- Form -->
+	<div class="container">
+		<form class="text-center" style="color: #757575;" action="{{ url_for('frm_visualizar_arquivo') }}" method="post" enctype = "multipart/form-data">
+			{% include "enviar_arquivo.html" %}
+			<div class="card">
+				<!--Card content-->
+				<div class="card-body px-lg-5 pt-0">
+					<div class="alert alert-info row" id="esconder2" style="display: none">
+						Preparando apresentação, aguarde ... 
+					</div>
+					<div class="card" id="esconder1">
+						<div class="card-header">{% include "ajuda.html" %} - <b>Prova de Conceito:</b> Ocerização de Arquivos Imagem ou PDF</div>
+						<div class="card-body">
+							<div class="row text-sm text-small">
+								Token:<input type="text" name="token" id="token" placeholder="seu token" class="input-sm" aria-label="Small" aria-describedby="inputGroup-sizing-sm" value="{{ token }}">
+								&nbsp;&nbsp;
+								<input type="hidden" name = 'id_arquivo' value = "{{ id_arquivo }}">
+								{% if atualizar and id_arquivo %}
+								<div class="custom-control custom-switch" id="chk_html1" >
+									<input type="checkbox" class="custom-control-input" {{com_cabecalho}} name="com_cabecalho" id="com_cabecalho"/>
+									<label class="custom-control-label" for="com_cabecalho"> Cabeçalho/Rodapé </label>
+									&nbsp;
+								</div>		
+								<div class="custom-control custom-switch" id="chk_html2" >
+									<input type="checkbox" class="custom-control-input" {{com_estampas}} name="com_estampas" id="com_estampas"/>
+									<label class="custom-control-label" for="com_estampas"> Estampas </label>
+									&nbsp;
+								</div>		
+								<div class="custom-control custom-switch" id="chk_html3" >
+									<input type="checkbox" class="custom-control-input" {{com_citacoes}} name="com_citacoes" id="com_citacoes"/>
+									<label class="custom-control-label" for="com_citacoes"> Citações </label>
+									&nbsp;
+								</div>		
+								&nbsp;&nbsp;
+								<div class="custom-control">
+									<input class="btn btn-outline-dark btn-sm" name='atualizar' type = "submit" value="Atualizar" onclick="$('#esconder1,#esconder2').toggle();"/>
+								</div>
+							    {% else %}
+								<div class="custom-control">
+									<!-- Modal enviar arquivo -->
+									<button type="button" class="btn btn-outline-dark btn-sm" data-toggle="modal" data-target="#enviopdf"><i class="fas fa-file-alt"></i> Arquivo</button>
+								</div>
+								{% endif %}
+								<div class="custom-control">
+									<input class="btn btn-outline-dark btn-sm" name='listar' type = "submit" value="Listar" onclick="$('#esconder1,#esconder2').toggle();"/>
+								</div>
+						   </div>
+						</div>
+						{% if texto_ocr %}
+							{% include "paginas_ocr.html" %}
+						{% endif %}
+						{% include "tarefas_usuario.html" %}
+					</div>
+				</div>
+		
+			</div>
+		</form>
+	</div>
+
+
+
+{% endblock content %}

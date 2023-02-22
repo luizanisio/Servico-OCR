@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ''' funcionalidade a ser incluída no futuro para comprimir o PDF ocerizado pelo serviço
-    - Luiz Anísio - justes para testes
+    - Luiz Anísio - ajustes para testes
     Baixado em 12/11/2022 - https://github.com/theeko74/pdfc/blob/master/pdf_compressor.py
 
     Instalar o GhostScript

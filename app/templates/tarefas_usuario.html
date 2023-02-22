@@ -1,0 +1,41 @@
+{% if tarefas_usuario %}
+    <hr>
+    <table class="table table-hover table-sm small">
+        <thead>
+          <tr><th>Tipo</th><th>Arquivo</th><th>Status</th><th>Início</th><th>dthr status</th><th>Tamanho Inicial</th><th>Tamanho Final</th></tr>
+        </thead>
+        <tbody>
+          {% for tarefa in tarefas_usuario %}
+              {% if tarefa.get('tipo') == 'pdf' %}
+                 {% if tarefa.get('finalizado') %}
+                      <td><a style="border-radius: 5px; background:#a4f3bb; border: 1px solid #00611d; padding:2px; line-height: 120%" href="{{ url_for('srv_download_arquivo', id_arquivo = tarefa['id'], tipo='pdf') }}">PDF</a>
+                      </td>
+                    <td>{{tarefa.get('nome_real')}}</a></td>
+                 {% else %}
+                    <td>PDF</td>
+                    <td>{{tarefa.get('nome_real')}}</a></td>
+                 {% endif %} 
+              {% elif tarefa.get('tipo') == 'img' %}
+                 {% if not tarefa.get('finalizado') %}
+                  <td>MD</td>
+                  <td>{{tarefa.get('nome_real')}}</td>
+                 {% else %}
+                  <td style="white-space: nowrap;"><a style="border-radius: 5px;background:#cedbff; border: 1px solid #5234ff; padding:2px; line-height: 120%" href="{{ url_for('srv_download_arquivo', id_arquivo = tarefa['id'], tipo='md', filtro_md=filtro_md) }}">MD</a>
+                      &nbsp;
+                      <a style="border-radius: 5px; background:#ffff99; border: 1px solid #ffcc00; padding:2px; line-height: 120%" href="{{ url_for('frm_visualizar_arquivo', id_arquivo = tarefa['id'], atualizar = True, token = token) }}">HTML</a>
+                  </td>
+                  <td>{{tarefa.get('nome_real')}}</a></td>
+                 {% endif %}		
+              {% endif %}		
+              <td>{{tarefa.get('status')}}</td>
+              <td>{{tarefa.get('inicio')}}</td>
+              <td>{{tarefa.get('dthr')}}</td>
+              <td>{{tarefa.get('tamanho_inicial',0)}} Kb</td>
+              <td>{{tarefa.get('tamanho_final',0)}} Kb</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+    <div>Total de tarefas: {{ qtd_tarefas }}</div>  
+
+{% endif %}		

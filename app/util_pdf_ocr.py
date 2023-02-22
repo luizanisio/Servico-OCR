@@ -31,7 +31,7 @@ def imagens_pdf(arquivo_entrada='', dpi = 300, np_array = True):
     return imagens
 
 
-def ocr_pdf(arquivo_entrada, arquivo_saida = None):
+def ocr_pdf(arquivo_entrada, arquivo_saida = None, dpi = 300):
     temp = './temp/'
     if (not arquivo_entrada) or (not os.path.isfile(arquivo_entrada)):
         print('Arquivo de entrada não encontrado: ', arquivo_entrada)
@@ -40,7 +40,7 @@ def ocr_pdf(arquivo_entrada, arquivo_saida = None):
         arquivo_saida, _ = os.path.splitext(arquivo_entrada)
         arquivo_saida = f'{arquivo_entrada}_OCR_.pdf'
 
-    pages = convert_from_path(arquivo_entrada, dpi=300, thread_count=Util.cpus())
+    pages = convert_from_path(arquivo_entrada, dpi=dpi, thread_count=Util.cpus())
     
     #for image in pages:
     #    cor_imagem(image, False)

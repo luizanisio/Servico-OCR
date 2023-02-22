@@ -9,9 +9,7 @@ from flask_bootstrap import Bootstrap4 #Bootstrap
 from jinja2 import TemplateNotFound
 
 import os
-import json
 from datetime import datetime
-import traceback
 
 ###################################################################
 # controller
@@ -56,14 +54,33 @@ def srv_analisar_arquivo():
 def srv_download_arquivo():
     dados = get_post(request)
     controller = Controller()
-    _id = dados.get('id','')
-    status = controller.status_arquivo_saida(_id)
-    if 'download' in status and 'pasta' in status and 'arquivo_pdf' in status:
-       arquivo_pdf = os.path.join(status.get('pasta',''), status.get('arquivo_pdf',''))
+    _id = dados.get('id','') or dados.get('id_arquivo','')
+    tipo = dados.get('tipo','')
+    filtro_md = dados.get('filtro_md','')
+    status = controller.get_status_id(_id)
+    print(f'Buscando id="{_id}" com status = {status} e filtro_md = "{filtro_md}"')
+    if status.get('finalizado_pdf') and tipo == 'pdf':
+       arquivo_pdf = controller.get_nome_arquivo_pdf(_id)
        if os.path.isfile(arquivo_pdf):
-          nome = status.get('nome_real', os.path.split(arquivo_pdf)[1] )
+          nome = status.get('nome_real_pdf', os.path.split(arquivo_pdf)[1] ) + '.pdf'
           print(f'Enviando arquivo: "{arquivo_pdf}" como "{nome}" ')
           return send_file(arquivo_pdf, as_attachment=True, attachment_filename =nome, cache_timeout=10)
+    if status.get('finalizado_img') and tipo == 'md':
+       cabecalho = (not filtro_md) or filtro_md.find('ca')>=0
+       estampas = (not filtro_md) or filtro_md.find('es')>=0
+       citacoes = (not filtro_md) or filtro_md.find('ci')>=0
+       texto_md = controller.get_md_id(_id, cabecalho= cabecalho, estampas=estampas, citacoes=citacoes)
+       texto = texto_md.get('md','')
+       erro = texto_md.get('erro','')
+       if erro:
+          controller.alerta(f'Erro ao gerar o arquivo md para envio id={_id} erro: {erro}')
+       if texto:
+          arquivo = Util.get_file_temp()
+          with open(arquivo, 'w') as f:
+               f.write(f'{texto}')
+          nome = status.get('nome_real_img', f'{_id}' ) + '.md'
+          print(f'Enviando arquivo: "{arquivo}" como "{nome}" ')
+          return send_file(arquivo, as_attachment=True, mimetype='text/html', attachment_filename =nome, cache_timeout=10)
     return controller.alerta(f'Arquivo não encontrado para download id={_id}')
 
 #############################################################################
@@ -71,86 +88,98 @@ def srv_download_arquivo():
 ## formulários de análise de arquivo
 
 @app.route(f'{PATH_API}',methods=['GET','POST'])
-@app.route(f'{PATH_API}frm_analisar_arquivo',methods=['GET','POST'])
-def frm_analisar_arquivo():
+@app.route(f'{PATH_API}frm_visualizar_arquivo',methods=['GET','POST'])
+def frm_visualizar_arquivo():
+    ''' Ao receber um id e a chave atualizar = carrega o arquivo 
+        Ao receber a chave listar = lista as tarefas do token selecionado
+        Ao receber o token em branco, cria um novo token 
+        Ao receber um arquivo, liga o hash dele ao token do usuário'''
     try:
         controller = Controller()
-        titulo = "Serviço OCR: Análise de arquivo"
+        titulo = "Serviço OCR: Visualizar resultado de análise do arquivo"
         dados = get_post(request)
         # print(dados)
         # configurações dos checkbox
-        inicio = ('submit' not in dados)
+        listar = ('listar' in dados)
+        atualizar = ('atualizar' in dados)
+        token = str(dados.get('token','')).strip()
+        # quando entra está ativo na tela de visualização
+        chave_on = 1 
         ignorar_cache = 'CHECKED' if dados.get('ignorar_cache') in (True,'on','S',1) else ''
-        com_cabecalho = 'CHECKED' if inicio or dados.get('com_cabecalho') in (True,'on','S',1) else ''
-        com_estampas =  'CHECKED' if inicio or dados.get('com_estampas') in (True,'on','S',1)  else ''
-        com_citacoes =  'CHECKED' if inicio or dados.get('com_citacoes') in (True,'on','S',1)  else ''
-        id_arquivo = dados.get('id')
-        saida_pdf =  'CHECKED' if dados.get('saida_pdf') in (True,'on','S',1)  else ''
+        gerar_pdf =  'CHECKED' if dados.get('gerar_pdf') in (True,'on','S',1)  else ''
+        gerar_img =  'CHECKED' if dados.get('gerar_img') in (True,'on','S',1)  else ''
+        com_cabecalho = 'CHECKED' if dados.get('com_cabecalho', chave_on) in (True,'on','S',1) else ''
+        com_estampas =  'CHECKED' if dados.get('com_estampas', chave_on) in (True,'on','S',1)  else ''
+        com_citacoes =  'CHECKED' if dados.get('com_citacoes', chave_on) in (True,'on','S',1)  else ''
+        # exemplo para upload de arquivo
         exemplo = str(dados.get('exemplo',''))
         exemplo = '' if exemplo.find(' -- exemplos')>=0 else exemplo
 
-        tem_arquivo_enviado = controller.request_file_send(request_file = request)
-        _ini = datetime.now()
-        try:
-            res = {'html' : ""}
-            # página inicial, sem envio de informações, roda a limpeza dos temporários
-            if ('submit' not in dados):
-                controller.limpar_temporarios()
-            # tem um exemplo selecionado e não foi enviado arquivo
-            elif exemplo and not tem_arquivo_enviado:
-                print(f'Ocerizando arquivo de exemplo: {exemplo}')
-                res = controller.ocerizar_arquivo_recebido(exemplo,
-                                                            ignorar_cache = ignorar_cache, 
-                                                            cabecalho = com_cabecalho, 
-                                                            estampas = com_estampas,
-                                                            citacoes = com_citacoes,
-                                                            saida_pdf = saida_pdf)
-            # foi enviado um id específico par acompanhar
-            elif id_arquivo and not tem_arquivo_enviado:
-                print(f'Localizando id: {id_arquivo}')
-                res = controller.status_por_id(id_arquivo)
-            # foi enviado um arquivo
-            elif tem_arquivo_enviado:
-                print('Ocerizando arquivo recebido ...')
-                res = controller.ocerizar_arquivo_recebido(request, 
-                                                            ignorar_cache = ignorar_cache, 
-                                                            cabecalho = com_cabecalho, 
-                                                            estampas = com_estampas,
-                                                            citacoes = com_citacoes,
-                                                            saida_pdf = saida_pdf)
-        except Exception as e:
-            res = {'erro': f'ERRO: {e}<hr>{traceback.format_exc()}' }
+        id_arquivo = str(dados.get('id_arquivo')) 
 
+        _ini = datetime.now()
+        status = controller.get_status_id(id_arquivo) if id_arquivo else {}
+        #print(f'Preparando para visualizar id = {id_arquivo} com status = {status}')
+        print('dados: ', dados)
+        res = {}
+        if (not listar) and (not atualizar):
+            if exemplo or controller.request_file_send(request_file = request):
+                if (not token) and (listar or atualizar):
+                    token = Util.get_token() 
+                res = controller.processar_envio_arquivo(token = token,
+                                                         exemplo_ou_request= exemplo or request,
+                                                         gerar_img = gerar_img,
+                                                         gerar_pdf = gerar_pdf ) 
+            listar = True
+        
+        elif id_arquivo and atualizar and status.get('finalizado_img'):
+           print(f'Preparando visualização html: {id_arquivo}') 
+           res = controller.get_html_id(id_arquivo, 
+                                        cabecalho = com_cabecalho,
+                                        estampas = com_estampas,
+                                        citacoes = com_citacoes)
         if res.get('erro'):
             res['html'] = controller.alerta(res['erro'])
-        download_arquivo = None
-        if res.get('id'):
-           exemplo = ''
-           #res['html'] = f'Dados para download: {res}'
-           download_arquivo = res
+        download_pdf = status.get('finalizado_pdf')
+        download_md = status.get('finalizado_img')
         tipo_folha = res.get('tipo_folha','')
+        filtro_md = ('ca' if com_cabecalho else '') + ' ' + \
+                    ('ci' if com_citacoes else '') + ' ' + \
+                    ('es' if com_estampas else '')
+        # listagem de tarefas do usuário
+        tarefas_usuario = []
+        if listar:
+            tarefas_usuario = controller.get_tarefas_usuario(token)
+            #print(f'Tarefas do usuário {token}: ', len(tarefas_usuario), tarefas_usuario)
+        if not any(tarefas_usuario):
+           tarefas_usuario = False 
         tempo = round((datetime.now()-_ini).total_seconds(),2)
         
-        # só informa um * para dizer que ignorou, mas não mantém ativo
-        ignorar_cache = '*' if ignorar_cache else ''
-        
-        return render_template("aplicar_ocr_arquivo.html", 
+        return render_template("visualizar_ocr_arquivo.html", 
                 titulo = titulo,
+                token = token,
+                listar = listar,
+                atualizar = atualizar,
                 texto_ocr = Markup(str(res.get('html',''))),
-                download_arquivo = download_arquivo,
+                id_arquivo = id_arquivo,
+                download_pdf = download_pdf,
+                download_md = download_md,
                 tempo = f"{tempo:.3f} s",
-                ignorar_cache = ignorar_cache,
                 com_cabecalho = com_cabecalho,
                 com_estampas = com_estampas,
                 com_citacoes = com_citacoes,
-                saida_pdf = saida_pdf,
+                ignorar_cache = ignorar_cache,
+                gerar_img = gerar_img,
+                gerar_pdf = gerar_pdf,
+                filtro_md = filtro_md,
                 tipo_folha = tipo_folha,
-                displaychkhtml = 'display: none' if saida_pdf else '',
-                exemplos = get_lista_exemplos(exemplo))
+                tarefas_usuario = tarefas_usuario,
+                qtd_tarefas = len(tarefas_usuario) if type(tarefas_usuario) is list else 0,
+                exemplos = get_lista_exemplos_view(''))
     except TemplateNotFound as e:
         return render_template_string(f'Página não encontrada: {e.message}')
 
-def get_lista_exemplos(exemplo):
+def get_lista_exemplos_view(exemplo):
     controller = Controller()
     res = [(_[0], 'SELECTED' if exemplo == _[0] else '') for _ in controller.listar_exemplos()]        
     res.insert(0, (' -- exemplos -- ', 'SELECTED' if not exemplo else ''))

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from tempfile import TemporaryDirectory
 from util_pdf_ocr import imagens_pdf
-from util_ocr import analise_imagens_ocr
+from util_ocr import AnaliseImagensOCR
 from util_html import aimg_2_html
+from util_markdown import aimg_2_md
 from util import Util
+from util_tokens import TokensUsuario
 from util_processar_pasta import ProcessarOcrThread
 import os
 import json
@@ -11,147 +13,102 @@ import shutil
 
 class Controller():
 
-    def aplicar_ocr_arquivo(self, arquivo):
-        return {}
+    def __init__(self) -> None:
+        self.pastas_saida = [ProcessarOcrThread.servico().saida, ProcessarOcrThread.servico().saida_img]
+        self.tokens = TokensUsuario(pastas_saida = self.pastas_saida)
+        self.pasta_temp = './temp'
+        # pasta para geração dos arquivos temporários de download
+        os.makedirs(self.pasta_temp, exist_ok=True)
 
-    def request_file_send(self, request_file):
-        if type(request_file) is str:
-            return None
-        # arquivo pdf, testa o conteúdo
-        if ('pdf' in request_file.files) and (request_file.files['pdf']) and \
-             str(request_file.files['pdf'].filename).lower().endswith('.pdf') and\
-             str(request_file.files['pdf'].content_type).lower().find('pdf') > 0:
-           return request_file.files['pdf']
+    def get_status_id(self, id):
+        return ProcessarOcrThread.servico().status_arquivo(id,pastas_saida = self.pastas_saida)
 
-        # arquivo imagem - vai tentar abrir qualquer um
-        if ('pdf' in request_file.files) and (request_file.files['pdf']) :
-           return request_file.files['pdf']
-        return None
+    def get_html_id(self, id, cabecalho, estampas, citacoes):
+        nm_analise = os.path.join(ProcessarOcrThread.servico().saida_img, f'{id}.json')
+        if os.path.isfile(nm_analise):
+           dados = Util.ler_json(nm_analise, {}) 
+        if not any(dados):
+           return {'erro' : self.alerta(f'Arquivo não encontrado para visualização')}
+        dados = self.filtrar_dados(dados = dados, cabecalho=cabecalho, 
+                                   estampas=estampas, citacoes = citacoes)
+        return {'html': aimg_2_html(dados), 'tipo_folha' : self.tipo_folha(dados) }
 
-    # extrai as imagens do PDF
-    def extrair_imagens_request_pdf(self, request_file):
-        # veio o nome do arquivo de exemplo
-        if type(request_file) is str:
-           print(f'Extraindo imagens do arquivo {request_file}')
-           pasta = './exemplos/'
-           arquivo = os.path.join(pasta,request_file) 
-           imagens = imagens_pdf(arquivo_entrada = arquivo) 
-        elif self.is_request_pdf(request_file):
-           print(f'Extraindo imagens do request PDF')
-           imagens = imagens_pdf(request_pdf = request_file) 
-        else:
-           print(f'Nenhuma imagem recebida') 
-           imagens = []
-        return imagens
+    def get_md_id(self, id, cabecalho, estampas, citacoes):
+        nm_analise = os.path.join(ProcessarOcrThread.servico().saida_img, f'{id}.json')
+        print('Nome arquivo análise: ', nm_analise)
+        dados = {}
+        if os.path.isfile(nm_analise):
+           dados = Util.ler_json(nm_analise, {}) 
+        if not any(dados):
+           return {'erro' : self.alerta(f'Arquivo não encontrado para visualização')}
+        dados = self.filtrar_dados(dados = dados, cabecalho=cabecalho, 
+                                   estampas=estampas, citacoes = citacoes)
+        return {'md': aimg_2_md(dados)}
 
-    def alerta(self, mensagem):
-        return f'<div class="p-3 mb-2 bg-warning text-dark">{mensagem}</div>'
-
-    def ocerizar_arquivo_recebido(self, request_file, ignorar_cache = False, cabecalho = True, estampas = True, citacoes = True, saida_pdf = False):
-        if not saida_pdf:
-            return self.ocerizar_arquivo_para_html(request_file = request_file,
-                                                   ignorar_cache = ignorar_cache, 
-                                                   cabecalho = cabecalho, 
-                                                   estampas = estampas, 
-                                                   citacoes = citacoes)
-        else:
-            return self.ocerizar_arquivo_para_pdf(request_file = request_file,
-                                                   ignorar_cache = ignorar_cache)
-
-
-    def ocerizar_arquivo_para_pdf(self, request_file, ignorar_cache = False):
-        ''' retorna o hash para criar um link de download e o status da ocerização 
-            {"erro":, "hash": ..., "inicio": ...., "fim": ...., "tempo": }
+    def processar_envio_arquivo(self, token, exemplo_ou_request, 
+                                      ignorar_cache = False, 
+                                      gerar_pdf = True,
+                                      gerar_img = True):
+        ''' cria o link token-hash 
+            {"erro": ... se ocorrer erro }
             '''
-        if not request_file:
+        if not exemplo_ou_request:
             return {}
         with TemporaryDirectory() as tempdir:
-             arquivo_entrada = self.__arquivo_analise__(request_file, tempdir)
+             arquivo_entrada = self.__arquivo_analise__(exemplo_ou_request, tempdir)
              if not os.path.isfile(arquivo_entrada):
                 a = os.path.split(arquivo_entrada)[1]
                 return {'erro': f'Arquivo não encontrado "{a}"' }
-             hash_arquivo = Util.hash_file(arquivo_entrada)
-             destino_entrada = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.pdf')
-             destino_json = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.json')
              #nome real usado para download
              nome_real = os.path.split(arquivo_entrada)[1]
+             tipo_real = os.path.splitext(nome_real)[1]
+             tipo_real = tipo_real[1:] if tipo_real[:1] == '.' else tipo_real
              nome_real = nome_real[6:] if nome_real[:6].lower() == 'cache_' else nome_real
-             # json com status inicial da solicitação
-             # esse json vai acompanhar o arquivo PDF nas pastas de processamento, saída e erro
-             json_status_inicial = {'status': 'incluído na pasta de entrada', 
-                                    'id' : f'{hash_arquivo}',
-                                    'nome_real': nome_real,
-                                    'inicio': Util.data_hora_str(),
-                                    'tamanho_inicial' : round(os.path.getsize(arquivo_entrada)/1024,2)}
-             if ignorar_cache:
-                status_arquivo = {}
-             else:   
-                status_arquivo = ProcessarOcrThread.servico().status_arquivo(hash_arquivo)
-             print(f'Processar PDF "{arquivo_entrada}" >> "{destino_entrada}"')
-             if not any(status_arquivo):
-                status_arquivo.update(json_status_inicial)
-                Util.gravar_json(destino_json, json_status_inicial)
+             print(f'Preparando análise do arquivo {arquivo_entrada} para processamento')
+             # todo processamento é feito pelo hash do arquivo
+             hash_arquivo = Util.hash_file(arquivo_entrada, complemento = tipo_real)
+             print(f'Associando token {token} ao id {hash_arquivo} do arquivo {nome_real}')
+             self.tokens.incluir_id(token, hash_arquivo)
+             if gerar_pdf and tipo_real.lower() == 'pdf':
+                destino = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.pdf') 
+                status_existente = ProcessarOcrThread.servico().status_arquivo(destino, ProcessarOcrThread.servico().saida)
+                if (not ignorar_cache) and status_existente.get('status_pdf'):
+                    return {}
+                status_inicial = {'status_pdf': 'enviado para processamento', 
+                                  'id' : f'{hash_arquivo}',
+                                  'nome_real_pdf': nome_real,
+                                  'tipo_real_pdf': tipo_real,
+                                  'inicio_pdf': Util.data_hora_str(),
+                                  'tamanho_inicial_pdf' : round(os.path.getsize(arquivo_entrada)/1024,2)}
+                print(f'Processar PDF "{arquivo_entrada}" >> "{destino}"')
+                ProcessarOcrThread.servico().atualizar_status(destino, status_inicial, ProcessarOcrThread.servico().saida)
                 if arquivo_entrada.find(tempdir) >= 0:
-                    shutil.move(arquivo_entrada, destino_entrada)
+                    shutil.move(arquivo_entrada, destino)
                 else:
-                    shutil.copy(arquivo_entrada, destino_entrada)
-                
-             if 'status' in status_arquivo:
-                status_arquivo['tipo_folha'] = 'PDF'
-                return status_arquivo
+                    shutil.copy(arquivo_entrada, destino)
+             if gerar_img or tipo_real.lower() != 'pdf' or (not gerar_pdf):
+                destino = os.path.join(ProcessarOcrThread.servico().entrada_img, f'{hash_arquivo}.{tipo_real}')
+                status_existente = ProcessarOcrThread.servico().status_arquivo(destino, ProcessarOcrThread.servico().saida_img)
+                if (not ignorar_cache) and status_existente.get('status_img'):
+                    print(f'Arquivo enviado já existe: {nome_real} com id {hash_arquivo}')
+                    return {}
+                status_inicial = {'status_img': 'enviado para processamento', 
+                                  'id' : f'{hash_arquivo}',
+                                  'nome_real_img': nome_real,
+                                  'tipo_real_img': tipo_real,
+                                  'inicio_img': Util.data_hora_str(),
+                                  'tamanho_inicial_img' : round(os.path.getsize(arquivo_entrada)/1024,2)}
+                print(f'Processar IMG "{arquivo_entrada}" >> "{destino}"')
+                ProcessarOcrThread.servico().atualizar_status(destino, status_inicial, ProcessarOcrThread.servico().saida_img)
+                if arquivo_entrada.find(tempdir) >= 0:
+                    shutil.move(arquivo_entrada, destino)
+                else:
+                    shutil.copy(arquivo_entrada, destino)
+             
+                return {}
         return {'erro' : 'Não foi possívle identificar o status do arquivo enviado'}
 
-    def status_por_id(self, id_arquivo):
-        return ProcessarOcrThread.servico().status_arquivo(id_arquivo)
 
-    def ocerizar_arquivo_para_html(self, request_file, ignorar_cache = False, cabecalho = True, estampas = True, citacoes = True):
-        ''' retorna o conteúdo da extração em html e o tipo da folha reconhecido
-            pode retornar uma mensagem de erro ou o hash para acompanhamento posterior
-            {"html": ..., "tipo_folha": ..., "erro":, "hash": ..., }
-            '''
-        if not request_file:
-            return {}
-        with TemporaryDirectory() as tempdir:
-             arquivo_entrada = self.__arquivo_analise__(request_file, tempdir)
-             if not os.path.isfile(arquivo_entrada):
-                a = os.path.split(arquivo_entrada)[1]
-                return {'erro': f'Arquivo não encontrado "{a}"' }
-             hash_arquivo = Util.hash_file(arquivo_entrada)
-             print(f'Extraindo dados do arquivo: "{arquivo_entrada}"  hash: {hash_arquivo}')
-
-             # nome do arquivo json de análise
-             pasta = './temp/'
-             #arquivo_json = os.path.splitext( os.path.split(arquivo_entrada)[1])[0]
-             #arquivo_json = 
-             arquivo_json = os.path.join(pasta, f'{hash_arquivo}.json')
-             print('Procurando cache no arquivo: ', arquivo_json, end='')
-             # análise em cache
-             if (not ignorar_cache) and os.path.isfile(arquivo_json):
-                dados = Util.ler_json(arquivo_json)
-                if any(dados):
-                    print(' ... cache encontrado _o/')
-                    aimg = analise_imagens_ocr(dados)
-                    dados = aimg.dados()
-                    Util.gravar_json(arquivo_json, dados)
-                    dados = self.filtrar_dados(dados = dados, cabecalho=cabecalho, 
-                                               estampas=estampas, citacoes = citacoes)
-                    return {'html': aimg_2_html(dados), 'tipo_folha' : self.tipo_folha(dados) }
-             # nova análise
-             if ignorar_cache:
-                print(' ... cache ignorado _o/')
-             else:
-                print(' ... cache não encontrado :(')
-             print('Atualizando cache: arquivo de entrada: ', arquivo_entrada)
-             if self.e_arquivo_pdf(arquivo_entrada):
-                imagens = imagens_pdf(arquivo_entrada)
-             else:
-                imagens = arquivo_entrada
-             aimg = analise_imagens_ocr(imagens)
-             dados = aimg.dados()
-             Util.gravar_json(arquivo_json, dados)
-             dados = self.filtrar_dados(dados = dados, cabecalho=cabecalho, 
-                                        estampas=estampas, citacoes = citacoes)
-        return {'html': aimg_2_html(dados), 'tipo_folha' : self.tipo_folha(dados) }
 
     def filtrar_dados(self, dados, cabecalho, estampas, citacoes):
         if cabecalho and estampas and citacoes:
@@ -174,6 +131,19 @@ class Controller():
         if not any(dados):
             return 'Página não definida'
         return 'Página '+ str(dados[0]['pagina_tipo'])
+
+    def alerta(self, mensagem):
+        return f'<div class="p-3 mb-2 bg-warning text-dark">{mensagem}</div>'
+
+    def get_nome_arquivo_pdf(self, id):
+        nm_pdf = os.path.join(ProcessarOcrThread.servico().saida, f'{id}.pdf')
+        if os.path.isfile(nm_pdf):
+           return nm_pdf
+        return None
+
+    def get_tarefas_usuario(self, token):
+        Util.limpar_temporarios(self.tokens.pasta_tokens, dias = 10)
+        return self.tokens.listar_tarefas(token)
 
     # recebe um arquivo ou nome de um arquivo e retorna o nome
     # deve ser chamado dentro de um TemporaryDirectory
@@ -198,19 +168,23 @@ class Controller():
         return None
 
     def listar_exemplos(self):
-        exemplos_pdf = Util.listar_arquivos(pasta = './exemplos/', extensao = 'pdf')
-        exemplos_png = Util.listar_arquivos(pasta = './exemplos/', extensao = 'png')
-        exemplos_jpg = Util.listar_arquivos(pasta = './exemplos/', extensao = 'jpg')
-        exemplos = exemplos_pdf + exemplos_jpg + exemplos_png
-        #print('Exemplos: ', exemplos)
+        exemplos = []
+        for tipo in ['pdf','png','jpg','tif','tiff']:
+            exemplos += Util.listar_arquivos(pasta = './exemplos/', extensao = tipo)
+        # print('Exemplos: ', exemplos)
         return [(os.path.split(nm)[1], nm) for nm in exemplos]
 
-    def limpar_temporarios(self):
-        Util.limpar_temporarios(5)
+    def request_file_send(self, request_file):
+        if type(request_file) is str:
+            return None
+        # arquivo pdf, testa o conteúdo
+        if ('pdf' in request_file.files) and (request_file.files['pdf']) and \
+             str(request_file.files['pdf'].filename).lower().endswith('.pdf') and\
+             str(request_file.files['pdf'].content_type).lower().find('pdf') > 0:
+           return request_file.files['pdf']
 
-    def arquivo_saida(self, hash):
-        arquivo = os.path.join(ProcessarOcrThread.servico().saida, f'{hash}.pdf')
-        return arquivo if os.path.isfile(arquivo) else None
+        # arquivo imagem - vai tentar abrir qualquer um
+        if ('pdf' in request_file.files) and (request_file.files['pdf']) :
+           return request_file.files['pdf']
+        return None
 
-    def status_arquivo_saida(self, hash):
-        return ProcessarOcrThread.servico().status_arquivo(hash)

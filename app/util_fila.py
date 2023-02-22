@@ -2,6 +2,7 @@
 
 '''
  Autor Luiz Anísio 19/11/2022
+ - atualizado 19/02/2023 - max_workers
  Abre n workers para processas os callables em processos independentes
  No map_threads e no map_processos substitui o valor de entrada pelo de saída
 
@@ -38,9 +39,12 @@ class WorkerQueue:
        _counter = contador da fila
     '''
     # ------ INI --------                    
-    def __init__(self, n_workers: int = 10, retorno = True, iniciar_workers = True) -> None:
+    def __init__(self, n_workers: int = 10, retorno = True, iniciar_workers = True, max_workers = 0) -> None:
         self.__thread_saida__ = None
         self.n_workers = self.__validar_workers__(n_workers)
+        if self.n_workers > max_workers and max_workers > 0:
+           self.n_workers = max_workers 
+           print(f'Máximo de workers atingido (max={max_workers}) - usando {self.n_workers}')
         self._queue = Queue()
         self._result_queue = Queue() if retorno else None
         # prepara os workers
@@ -50,6 +54,8 @@ class WorkerQueue:
         self._counter = 0
         self._results = []
         self._erros = []
+        #print(f'Iniciando com {self.n_workers} processos - pedidos: {n_workers}')
+        #exit()
 
     # ------- PROCESSAMENTO DA FILA DE ENTRADA
     def worker_queue(self, wid, in_queue: Queue, result_queue: Queue):
@@ -156,7 +162,8 @@ class WorkerQueue:
         # inicia ou reinicia os workers
         if any(self.__workers.keys()):
            self.finalizar()
-        self.n_workers = self.__validar_workers__(n_workers)
+        if n_workers is not None:
+           self.n_workers = self.__validar_workers__(n_workers)
         self.__workers = {}
         for wid in range(self.n_workers):
             p = Process(target=self.worker_queue, args=(wid, self._queue, self._result_queue), daemon = True)
@@ -224,7 +231,7 @@ class WorkerQueue:
     def __validar_workers__(cls, n_workers):
         if (n_workers == None) or type(n_workers) is not int:
            return cls.cpus(False)
-        elif n_workers < 2:
+        elif n_workers < 1:
            return cls.cpus(True)    
         return n_workers
         

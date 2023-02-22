@@ -34,7 +34,7 @@ from copy import deepcopy
 import re
 from PIL import Image
 
-class analise_imagens_ocr():
+class AnaliseImagensOCR():
     CONF_LIMITE = 30
     MAX_PALAVRAS_CABECALHO = 15
     MAX_PALAVRAS_RODAPE = 40
@@ -64,13 +64,13 @@ class analise_imagens_ocr():
             e guarda os dados das caixas de texto
         '''
         if img is None:
-           print(f'analise_imagens_ocr: nenhuma imagem recebida')
+           print(f'AnaliseImagensOCR: nenhuma imagem recebida')
            return
         imgs = []
         if type(img) is str:
            # recebeu um nome de arquivo 
            imgs = [cv2.imread(img, 0 if self.file_2_grayscale  else None)]
-           print(f'analise_imagens_ocr: arquivo {img} carregado')
+           print(f'AnaliseImagensOCR: arquivo {img} carregado')
         elif type(img) is list and len(img)>0 and type(img[0]) is dict:
            # recebeu um dicionário de análise
            self.__dados__ = img
@@ -79,11 +79,11 @@ class analise_imagens_ocr():
         elif type(img) is list:
            # recebeu uma lista de imagens
            imgs = [cv2.cvtColor(_, cv2.COLOR_BGR2GRAY if self.file_2_grayscale else None) for _ in img]
-           print(f'analise_imagens_ocr: imagens carregadas')
+           print(f'AnaliseImagensOCR: imagens carregadas')
         else:
            # recebeu uma imagem
            imgs = [cv2.cvtColor(img, cv2.COLOR_BGR2GRAY if self.file_2_grayscale else None)]
-           print(f'analise_imagens_ocr: imagem carregada')
+           print(f'AnaliseImagensOCR: imagem carregada')
         # processa o OCR das imagens
         if len(imgs) > 0:
            self.processar_img_ocr(imgs)
@@ -565,7 +565,7 @@ if __name__ == '__main__':
        print('Não implementado') 
        exit()
     #imagem = cv2.imread(arq)
-    aimg = analise_imagens_ocr(arquivo, file_2_grayscale = True)
+    aimg = AnaliseImagensOCR(arquivo, file_2_grayscale = True)
     pasta, arquivo_nm = os.path.split(arquivo)
     arquivo_nm, _ = os.path.splitext(arquivo_nm)
     pasta = './temp/'
