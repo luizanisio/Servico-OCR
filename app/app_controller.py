@@ -54,8 +54,10 @@ class Controller():
             '''
         if not exemplo_ou_request:
             return {}
-        with TemporaryDirectory() as tempdir:
-             arquivo_entrada = self.__arquivo_analise__(exemplo_ou_request, tempdir)
+        with TemporaryDirectory(dir=self.pasta_temp) as tempdir:
+             arquivo_entrada, enviado = self.__arquivo_analise__(exemplo_ou_request, tempdir)
+             if not arquivo_entrada:
+                return {'erro': 'nenhum arquivo selecionado'} 
              if not os.path.isfile(arquivo_entrada):
                 a = os.path.split(arquivo_entrada)[1]
                 return {'erro': f'Arquivo não encontrado "{a}"' }
@@ -69,6 +71,7 @@ class Controller():
              hash_arquivo = Util.hash_file(arquivo_entrada, complemento = tipo_real)
              print(f'Associando token {token} ao id {hash_arquivo} do arquivo {nome_real}')
              self.tokens.incluir_id(token, hash_arquivo)
+             ok = False
              if gerar_pdf and tipo_real.lower() == 'pdf':
                 destino = os.path.join(ProcessarOcrThread.servico().entrada, f'{hash_arquivo}.pdf') 
                 status_existente = ProcessarOcrThread.servico().status_arquivo(destino, ProcessarOcrThread.servico().saida)
@@ -76,16 +79,17 @@ class Controller():
                     return {}
                 status_inicial = {'status_pdf': 'enviado para processamento', 
                                   'id' : f'{hash_arquivo}',
+                                  'tipo' : 'pdf',
                                   'nome_real_pdf': nome_real,
                                   'tipo_real_pdf': tipo_real,
                                   'inicio_pdf': Util.data_hora_str(),
                                   'tamanho_inicial_pdf' : round(os.path.getsize(arquivo_entrada)/1024,2)}
                 print(f'Processar PDF "{arquivo_entrada}" >> "{destino}"')
                 ProcessarOcrThread.servico().atualizar_status(destino, status_inicial, ProcessarOcrThread.servico().saida)
-                if arquivo_entrada.find(tempdir) >= 0:
-                    shutil.move(arquivo_entrada, destino)
-                else:
-                    shutil.copy(arquivo_entrada, destino)
+                # copia com outro nome para não ter problema com arquivos grandes
+                shutil.copy(arquivo_entrada, f'{destino}.entrada')
+                shutil.move(f'{destino}.entrada', destino)
+                ok = True
              if gerar_img or tipo_real.lower() != 'pdf' or (not gerar_pdf):
                 destino = os.path.join(ProcessarOcrThread.servico().entrada_img, f'{hash_arquivo}.{tipo_real}')
                 status_existente = ProcessarOcrThread.servico().status_arquivo(destino, ProcessarOcrThread.servico().saida_img)
@@ -94,18 +98,26 @@ class Controller():
                     return {}
                 status_inicial = {'status_img': 'enviado para processamento', 
                                   'id' : f'{hash_arquivo}',
+                                  'tipo' : 'img',
                                   'nome_real_img': nome_real,
                                   'tipo_real_img': tipo_real,
                                   'inicio_img': Util.data_hora_str(),
                                   'tamanho_inicial_img' : round(os.path.getsize(arquivo_entrada)/1024,2)}
                 print(f'Processar IMG "{arquivo_entrada}" >> "{destino}"')
                 ProcessarOcrThread.servico().atualizar_status(destino, status_inicial, ProcessarOcrThread.servico().saida_img)
-                if arquivo_entrada.find(tempdir) >= 0:
-                    shutil.move(arquivo_entrada, destino)
-                else:
-                    shutil.copy(arquivo_entrada, destino)
-             
-                return {}
+                # copia com outro nome para não ter problema com arquivos grandes
+                shutil.copy(arquivo_entrada, f'{destino}.entrada')
+                shutil.move(f'{destino}.entrada', destino)
+                ok = True
+        if ok:
+           # se foi um arquivo enviado e criado como temporário, remove o arquivo temporário
+           if enviado >= 0:
+              try: 
+                 if os.path.isfile(arquivo_entrada): 
+                    os.remove(arquivo_entrada)
+              except:
+                 print(f'Arquivo temporário {arquivo_entrada} não pôde ser excluído')  
+           return {}
         return {'erro' : 'Não foi possívle identificar o status do arquivo enviado'}
 
 
@@ -155,7 +167,7 @@ class Controller():
         if request_file and type(request_file) is str:
            nome_arquivo = str(request_file)
            nome_arquivo = os.path.split(nome_arquivo)[1]
-           return os.path.join('./exemplos/', nome_arquivo)
+           return os.path.join('./exemplos/', nome_arquivo), False
 
         # veio o conteúdo do arquivo - copia ele para a pasta temporária
         file_pdf = self.request_file_send(request_file)
@@ -163,9 +175,9 @@ class Controller():
             nome_arquivo = os.path.split(file_pdf.filename)[1]
             nome_arquivo = os.path.join(tempdir, f'cache_{nome_arquivo}') 
             file_pdf.save(nome_arquivo)
-            return nome_arquivo
+            return nome_arquivo, True
 
-        return None
+        return None, None
 
     def listar_exemplos(self):
         exemplos = []

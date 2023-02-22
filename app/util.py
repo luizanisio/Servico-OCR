@@ -129,7 +129,7 @@ class Util():
             f.write(json.dumps(dados, indent = 2))
 
     @classmethod
-    def ler_json(cls, arquivo, padrao = dict() ):
+    def ler_json(cls, arquivo, padrao = dict({}) ):
         if os.path.isfile(arquivo):
             with open(arquivo, 'r') as f:
                  dados = f.read()

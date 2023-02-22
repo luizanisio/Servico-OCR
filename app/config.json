@@ -1,0 +1,24 @@
+{
+  "gerar_md": false,
+  "gerar_html": false,
+  "resolucao_img": 300,
+  "resolucao_pdf": 300,
+  "n_workers": -1,
+  "max_workers": 20,
+  "entrada": "./ocr_entrada",
+  "saida": "./ocr_saida",
+  "processando": "./ocr_processando",
+  "erro": "./ocr_erro",
+  "LEIA-ME": {
+    "entrada": "./ocr_entrada",
+    "saida": "./ocr_saida",
+    "processando": "./ocr_processando",
+    "erro": "./ocr_erro",
+    "gerar_md": "criar um arquivo MD na pasta de saida_img ap\u00f3s gerar an\u00e1lise img de entrada",
+    "gerar_html": "criar um arquivo HTML na pasta de saida_img ap\u00f3s gerar an\u00e1lise img de entrada",
+    "resolu\u00e7\u00e3o_img": "resolu\u00e7\u00e3o da imagem gerada do PDF de entrada para gerar a an\u00e1lise/extra\u00e7\u00e3o dos textos",
+    "resolu\u00e7\u00e3o_pdf": "resolu\u00e7\u00e3o da imagem gerada do PDF com camada de OCR",
+    "n_workers": "n\u00famero de workers >> -1 para CPUs -1, 0 para todas as CPUS ou um valor espec\u00edfico",
+    "max_workers": "m\u00e1ximo de workers caso a m\u00e1quina tenha um n\u00famero maior que o que se deseja disponibilizar"
+  }
+}

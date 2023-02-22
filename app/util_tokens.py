@@ -43,6 +43,11 @@ class TokensUsuario():
                 #print(f'Procurando status do arquivo para token {token}: {nome_arquivo_status}')
                 status = ProcessarOcr.status_arquivo(nome_arquivo_status, pasta)
                 #print(f'Status {nome_arquivo_status}: {status}')
+                if not status.get('id'):
+                    continue
+                if nome_id != status.get('id'):
+                    print(f'*** Erro de relacionamento: {token}-{nome_id} != {status.get("id")}  arquivo {nome_arquivo_status}')
+                    continue
                 ok = False
                 # linha imagem
                 if status.get('nome_real_img'):
@@ -50,11 +55,12 @@ class TokensUsuario():
                     linha['download'] = str(nome_id) if status.get('finalizado_img') else ''
                     linha['tamanho_inicial'] = status.get('tamanho_inicial_img', 0 ) 
                     linha['tamanho_final'] = status.get('tamanho_final_img', 0 )
-                    linha['status'] = status.get('status_img', 'status indisponível' )
+                    linha['status'] = status.get('status_img', 'status indisponível' ) + ' |img '+ nome_id[-10:]
                     linha['inicio'] = status.get('inicio_img', '' )
                     linha['dthr'] = status.get('dthr_img', '' )
                     linha['finalizado'] = status.get('finalizado_img')
                     linha['id'] = nome_id
+                    # print(f'INCLUINDO: {nome_id}-img', linha['nome_real'])
                     res.append(linha)
                     ok = True
                 if status.get('nome_real_pdf'):
@@ -62,11 +68,12 @@ class TokensUsuario():
                     linha['download'] = str(nome_id) if status.get('finalizado_pdf') else ''
                     linha['tamanho_inicial'] = status.get('tamanho_inicial_pdf', 0 ) 
                     linha['tamanho_final'] = status.get('tamanho_final_pdf', 0 )
-                    linha['status'] = status.get('status_pdf', 'status indisponível' )
+                    linha['status'] = status.get('status_pdf', 'status indisponível' ) + ' |pdf '+ nome_id[-10:]
                     linha['inicio'] = status.get('inicio_pdf', '' )
                     linha['dthr'] = status.get('dthr_pdf', '' )
                     linha['finalizado'] = status.get('finalizado_pdf')
                     linha['id'] = nome_id
+                    # print(f'INCLUINDO: {nome_id}-pdf-', linha['nome_real'])
                     res.append(linha)
                     ok = True
                 # atualiza o token por ser válido

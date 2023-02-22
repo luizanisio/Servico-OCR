@@ -139,6 +139,7 @@ class ProcessarOcr():
             devolve o nome do arquivo de status na pasta de saída
             ex. ..saida/arquivo.status.json'''
         _arquivo = os.path.splitext(os.path.split(arquivo)[1])[0]
+        #print(f'BUSCANDO NOME {arquivo} e devolvendo {_arquivo}')
         return os.path.join(pasta_saida, f'{_arquivo}{cls.SUFIXO_STATUS}')
 
     # método de classe para ser usado pelos métodos em processos isolados
@@ -146,7 +147,11 @@ class ProcessarOcr():
     def atualizar_status(cls, arquivo, dados, pasta_saida):
         arquivo_status = cls.nome_arquivo_status(arquivo, pasta_saida)
         status = Util.ler_json(arquivo_status)
-        status.update(dados)
+        if any(status):
+           status.update(dados)
+        else:
+           status = dados 
+           status['dthr_criacao_status'] = Util.data_hora_str()
         Util.gravar_json(arquivo_status, status)
         return status
     
@@ -176,8 +181,8 @@ class ProcessarOcr():
             # arquivo único
             _arquivo = cls.nome_arquivo_status(arquivo, pastas_saida)
             #print(f'Carregando status do arquivo: {arquivo} como ({_arquivo})')
-            return Util.ler_json(_arquivo)
-        return dict()
+            return Util.ler_json(_arquivo, dict({}) )
+        return dict({})
 
     def status_geral_txt(self):
         return ', '.join([f'{c}:{v}' for c,v in self.status_geral.items()])
@@ -426,10 +431,10 @@ def processar_arquivo(arquivos):
     saida_ngs = os.path.splitext(entrada)[0] + '_ngs_.pdf'
     saida_erro_txt = os.path.splitext(erro)[0] + '.txt'
     try:
-        ProcessarOcr.atualizar_status_txt(entrada,pasta_saida=pasta_saida, tipo='pdf', status='Processamento iniciado', tamanho='i')
+        ProcessarOcr.atualizar_status_txt(entrada, pasta_saida=pasta_saida, tipo='pdf', status='Processamento iniciado', tamanho='i')
         print(f'>>> PROCESSANDO ARQUIVO: {entrada} <<<')
         ocr_pdf(arquivo_entrada=entrada, arquivo_saida=saida_ngs, dpi = dpi)    
-        ProcessarOcr.atualizar_status_txt(saida_ngs,pasta_saida=pasta_saida, tipo='pdf', status='OCR concluído - enviado para compactação', tamanho='f')
+        ProcessarOcr.atualizar_status_txt(entrada, pasta_saida=pasta_saida, tipo='pdf', status='OCR concluído - enviado para compactação', tamanho='f')
         print(f'>>> ARQUIVO PROCESSADO: {entrada} --> {saida} <<<')
     except Exception as e:
         # move o arquivo para a pasta de erro
