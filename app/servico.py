@@ -38,7 +38,13 @@ def get_post(req:request):
 @app.route(f'{PATH_API}health', methods=['GET'])
 @app.route('/health', methods=['GET'])
 def get_health():
-    return jsonify({'ok' : True})
+    status = ProcessarOcrThread.servico().health_check()
+    print(f'Health Check: {status}')
+    if 'msg_erro' in status:
+        _msg = status.get('erro','erro ao recuperar arquivo de status do serviço')
+        print(f'ERRO Health Check: {_msg}')
+        raise Exception(_msg)
+    return jsonify(status)
 
 ###################################################################
 # recebe um PDF ou imagem
@@ -98,13 +104,14 @@ def frm_visualizar_arquivo():
         controller = Controller()
         titulo = "Serviço OCR: Visualizar resultado de análise do arquivo"
         dados = get_post(request)
-        # print(dados)
+        print(dados)
         # configurações dos checkbox
         listar = ('listar' in dados)
         atualizar = ('atualizar' in dados)
         token = str(dados.get('token','')).strip()
-        # quando entra está ativo na tela de visualização
-        chave_on = 1 
+        id_arquivo = str(dados.get('id_arquivo')) 
+        # entra com as chaves ativas no início
+        chave_on = 1 if dados.get('atualizar') == True else 0
         ignorar_cache = 'CHECKED' if dados.get('ignorar_cache') in (True,'on','S',1) else ''
         gerar_pdf =  'CHECKED' if dados.get('gerar_pdf') in (True,'on','S',1)  else ''
         gerar_img =  'CHECKED' if dados.get('gerar_img') in (True,'on','S',1)  else ''
@@ -115,7 +122,6 @@ def frm_visualizar_arquivo():
         exemplo = str(dados.get('exemplo',''))
         exemplo = '' if exemplo.find(' -- exemplos')>=0 else exemplo
 
-        id_arquivo = str(dados.get('id_arquivo')) 
 
         _ini = datetime.now()
         status = controller.get_status_id(id_arquivo) if id_arquivo else {}

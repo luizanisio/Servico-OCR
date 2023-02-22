@@ -192,6 +192,7 @@ class ProcessarOcr():
         dthr_status = self.data_hora_status_geral()
         if dthr_status and not forcado:
            if (datetime.now() - dthr_status).total_seconds() < 60:
+              # print(f'Status geral não gravado... {dthr_status}')
               return
         for pasta in [self.saida, self.saida_img]:
             arquivo = os.path.join(pasta, 'status.json')
@@ -211,20 +212,25 @@ class ProcessarOcr():
     def health_check(self, tempo_saude_minutos = 5):
         dthr_status = self.data_hora_status_geral()
         if not dthr_status:
-            return False
-        return (datetime.now() - dthr_status).total_seconds() <= tempo_saude_minutos * 60
+            return {'msg_erro': 'sem arquivo de status geral'}
+        if (datetime.now() - dthr_status).total_seconds() <= tempo_saude_minutos * 60:
+            return self.status_geral
+        return {'msg_erro': f'status do serviço com tempo superior a {tempo_saude_minutos} minutos'}
 
     @classmethod
     def class_health_check(cls, pastas_saida = [], tempo_saude_minutos = 5):
         dthr_status = None
+        dados = None
         for pasta in pastas_saida:
             arquivo = os.path.join(pasta, 'status.json')
             if os.path.isfile(arquivo):
                 dthr_status = Util.data_arquivo(arquivo)
+                dados = Util.ler_json(arquivo=arquivo, padrao = {'msg_erro': 'arquivo de status não carregado'})
                 break
         if not dthr_status:
-            return False
-        return (datetime.now() - dthr_status).total_seconds() <= tempo_saude_minutos * 60
+            return {'msg_erro': 'sem arquivo de status '}
+        if (datetime.now() - dthr_status).total_seconds() <= tempo_saude_minutos * 60:
+            return dados
 
     def parar(self):
         self.__processar_continuamente__ = False
@@ -410,7 +416,7 @@ def processar_analise(arquivos):
         ProcessarOcr.mover_entre_pastas(entrada, pasta_erro)
         try:
             with open(saida_erro_txt, 'w') as fe:
-                    fe.write(f'ERRO: {e}')
+                 fe.write(f'ERRO: {e}')
         except Exception as ee:
             print(f'ERRO processar_arquivo: não foi possível criar o arquivo com o a mensagem de erro de processamento {ee}, erro de processamento: {e}')
     if os.path.isfile(entrada):
@@ -428,7 +434,7 @@ def processar_arquivo(arquivos):
     nm_entrada = os.path.split(entrada)[1]
     saida = os.path.join(pasta_saida, nm_entrada)
     erro = os.path.join(pasta_erro, nm_entrada)
-    saida_ngs = os.path.splitext(entrada)[0] + '_ngs_.pdf'
+    saida_ngs = os.path.splitext(saida)[0] + '_ngs_.pdf'
     saida_erro_txt = os.path.splitext(erro)[0] + '.txt'
     try:
         ProcessarOcr.atualizar_status_txt(entrada, pasta_saida=pasta_saida, tipo='pdf', status='Processamento iniciado', tamanho='i')

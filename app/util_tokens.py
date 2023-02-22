@@ -55,7 +55,7 @@ class TokensUsuario():
                     linha['download'] = str(nome_id) if status.get('finalizado_img') else ''
                     linha['tamanho_inicial'] = status.get('tamanho_inicial_img', 0 ) 
                     linha['tamanho_final'] = status.get('tamanho_final_img', 0 )
-                    linha['status'] = status.get('status_img', 'status indisponível' ) + ' |img '+ nome_id[-10:]
+                    linha['status'] = status.get('status_img', 'status indisponível' ) 
                     linha['inicio'] = status.get('inicio_img', '' )
                     linha['dthr'] = status.get('dthr_img', '' )
                     linha['finalizado'] = status.get('finalizado_img')
@@ -68,7 +68,7 @@ class TokensUsuario():
                     linha['download'] = str(nome_id) if status.get('finalizado_pdf') else ''
                     linha['tamanho_inicial'] = status.get('tamanho_inicial_pdf', 0 ) 
                     linha['tamanho_final'] = status.get('tamanho_final_pdf', 0 )
-                    linha['status'] = status.get('status_pdf', 'status indisponível' ) + ' |pdf '+ nome_id[-10:]
+                    linha['status'] = status.get('status_pdf', 'status indisponível' ) 
                     linha['inicio'] = status.get('inicio_pdf', '' )
                     linha['dthr'] = status.get('dthr_pdf', '' )
                     linha['finalizado'] = status.get('finalizado_pdf')
