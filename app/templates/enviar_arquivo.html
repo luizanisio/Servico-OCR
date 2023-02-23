@@ -3,30 +3,40 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalCenterTitle">Arquivo PDF/TXT</h5>
+            <h5 class="modal-title" id="exampleModalCenterTitle">Arquivo PDF ou Imagem</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
             </div>
             <div class="modal-body ">
-                <div class="custom-control row " id="chk_html2">
-                    &nbsp;
-                    <input type="checkbox" name="gerar_pdf" id="gerar_pdf"> PDF -> PDF
-                    &nbsp;
-                    <input type="checkbox" name="gerar_img" id="gerar_img"> PDF -> HTML/MD
-                    &nbsp;
-                    <input type="checkbox" name="ignorar_cache" id="ignorar_cache"> Ignorar cache
-                    <br>
-                </div>
-                <br>
+                <table class="table table-hover table-sm small">
+                    <thead><tr><th>Opções para PDF</th><th>Opção geral</th></tr></thead>
+                    <tbody>
+                        <tr><td><input type="checkbox" name="gerar_pdf" CHECKED id="gerar_pdf"> Gerar PDF/OCR<br>
+                                <input type="checkbox" name="gerar_img" CHECKED id="gerar_img"> Gerar saída HTML/MD
+                        </td><td><input type="checkbox" name="ignorar_cache" id="ignorar_cache"> Ignorar cache</td></tr>
+                    </tbody>
+                </table>
+
                 Exemplo: 
                 <select class="selectpicker" data-width="fit"  name="exemplo" id="exemplo">
                     {% for exemplo in exemplos %}		
                     <option value="{{exemplo[0]}}" {{exemplo[1]}}>{{exemplo[0]}}</option>
                     {% endfor %}		
                  </select>
-                <input type = "file" name = "pdf"><input type = "submit">
-            </div>
+                <br><br>
+                <input type = "file" name = "pdf"><input class="btn btn-primary" type = "submit">
+                <br><br>
+                <table class="table table-hover table-sm small">
+                    <thead>
+                     <tr><th>PDF</th><th>JPG/TIFF/PNJ</th></tr>
+                    </thead>
+                    <tbody>
+                     <tr><td>Podem gerar PDF com camada OCR ou mapa para geração de HTML e/ou MD</td>
+                     <td>Sempre criam um mapa para geração de HTML e/ou MD</td></tr>
+                    </tbody>
+                </table>
+                </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
             </div>
