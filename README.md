@@ -25,7 +25,7 @@
   
 > 💡 <sub>Nota: é feito um controle de todos os arquivos enviados e status de cada um para acompanhamento, tanto no caso de PDF para PDF como PDF para MD/HTML. O arquivo fica na pasta `saida` ou `saida_img` dependendo do tipo de processamento solicitado.<br> Caso um arquivo seja enviado novamente para OCR, será identificado pelo hash e não será processado duas vezes. Para sobrepor o processamento anterior, basta selecionar a opção "ignorar-cache" ao enviar o arquivo.</sub>
 
-![exemplo recorte tela serviço](./img/servico_ocr_20230221.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
+![exemplo recorte tela serviço](./img/servico_ocr_20230223.png?raw=true "Exemplo recorte tela serviço - HTML e PDF")
 
 ## Exemplo de extração e metadados gerados
 ```
