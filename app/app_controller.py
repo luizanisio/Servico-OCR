@@ -111,7 +111,7 @@ class Controller():
                 ok = True
         if ok:
            # se foi um arquivo enviado e criado como temporário, remove o arquivo temporário
-           if enviado >= 0:
+           if enviado:
               try: 
                  if os.path.isfile(arquivo_entrada): 
                     os.remove(arquivo_entrada)
