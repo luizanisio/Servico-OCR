@@ -22,7 +22,7 @@
                  {% else %}
                   <td style="white-space: nowrap;"><a style="border-radius: 5px;background:#cedbff; border: 1px solid #5234ff; padding:2px; line-height: 120%" href="{{ url_for('srv_download_arquivo', id_arquivo = tarefa['id'], tipo='md', filtro_md=filtro_md) }}">MD</a>
                       &nbsp;
-                      <a style="border-radius: 5px; background:#ffff99; border: 1px solid #ffcc00; padding:2px; line-height: 120%" href="{{ url_for('frm_visualizar_arquivo', id_arquivo = tarefa['id'], atualizar = True, token = token) }}">HTML</a>
+                      <a style="border-radius: 5px; background:#ffff99; border: 1px solid #ffcc00; padding:2px; line-height: 120%" href="{{ url_for('frm_visualizar_arquivo', id_arquivo = tarefa['id'], atualizar = 'link', token = token) }}">HTML</a>
                   </td>
                   <td>{{tarefa.get('nome_real')}}</a></td>
                  {% endif %}		

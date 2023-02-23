@@ -111,7 +111,7 @@ def frm_visualizar_arquivo():
         token = str(dados.get('token','')).strip()
         id_arquivo = str(dados.get('id_arquivo')) 
         # entra com as chaves ativas no início
-        chave_on = 1 if dados.get('atualizar') == True else 0
+        chave_on = 1 if dados.get('atualizar') == 'link' else 0
         ignorar_cache = 'CHECKED' if dados.get('ignorar_cache') in (True,'on','S',1) else ''
         gerar_pdf =  'CHECKED' if dados.get('gerar_pdf') in (True,'on','S',1)  else ''
         gerar_img =  'CHECKED' if dados.get('gerar_img') in (True,'on','S',1)  else ''

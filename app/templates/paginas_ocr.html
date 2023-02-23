@@ -5,7 +5,11 @@
         </div>		
     {% endif %}
     <div class="card">
-      <div class="card-header">Conteúdo do documento ocerizado ( {{tipo_folha}} )</div>
+      <div class="card-header">Conteúdo do documento ocerizado ( {{tipo_folha}} )
+        {% if id_arquivo %}
+           &nbsp;<sub><a style="border-radius: 5px;background:#cedbff; border: 1px solid #5234ff; padding:2px; line-height: 120%" href="{{ url_for('srv_download_arquivo', id_arquivo = id_arquivo, tipo='md', filtro_md=filtro_md) }}">MD</a></sub>
+        {% endif%}
+      </div>
       <div class="card-body">
       <div class="form-group shadow-textarea text-left">
         {{ texto_ocr }}
