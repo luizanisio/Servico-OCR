@@ -33,6 +33,7 @@ import cv2
 from copy import deepcopy
 import re
 from PIL import Image
+import os
 
 class AnaliseImagensOCR():
     CONF_LIMITE = 30
@@ -42,6 +43,7 @@ class AnaliseImagensOCR():
     MAX_PALAVRAS_FOLHAS = 5
 
     RE_FOLHA = re.compile('[0-9]')
+    TIPOS_NAO_MIOLO = ['C','R','F','E']
 
     def __init__(self, img, file_2_grayscale = True, linguagem='por', armazenar_imagem = True):
       self.file_2_grayscale = file_2_grayscale
@@ -131,6 +133,7 @@ class AnaliseImagensOCR():
             if _bloco != _bloco_o:
                #if _pagina != _pagina_o:
                #   self.__pagina__ += 1
+               # a páigna é contada por chamada à função processar_img_ocr
                _pagina_o = _pagina
                _bloco_o = _bloco
                _parag_linha_o = ''
@@ -155,13 +158,16 @@ class AnaliseImagensOCR():
             dados['texto'] += f' {_texto}{ql}'
         
         incluir_dados(dados)
-        self.__pagina__ += 1
+        #self.__pagina__ += 1
         ### indica que precisa enriquecer os dados de análise novamente, 
         ### pois leva em conta todos os objetos
         self.__enriquecidos__ = False
 
-    def dados(self):
-        if not self.__enriquecidos__:
+    def carregar_dados(self, dados):
+        self.__load_dados__(dados)
+
+    def dados(self, reanalisar = False):
+        if reanalisar or (not self.__enriquecidos__):
            self.__enriquecer_dados__()
         return self.__dados__
 
@@ -206,7 +212,7 @@ class AnaliseImagensOCR():
             box['tipo_sugerido'] = ''
         # margens laterais, superior e inferior 
         # margens_edsi - margem até o box mais próximo ou a página
-        for p in paginas:
+        for pagina in paginas:
             linhas_h[pagina].sort()
             linhas_v[pagina].sort()
         #print('linhas: ', linhas_h)
@@ -249,10 +255,14 @@ class AnaliseImagensOCR():
             elif y >= ph - ph * margens.MARGEM_RODAPE:
                box['bordas'].append('I')
                box['ordem_extra'] = 3
+            # vai dar preferência para o y na ordenação, 
+            # mas levando em conta o x por conta das colunas ou erro. O x = largura da página soma linha fonte de altura
+            box['ordem_y'] = box['box_xyla'][1] + (box['alt_linhas'] * box['box_xyla'][0] / pw)
 
         # ordena pela página, depois pela posição y e depois pela posição x
         # box nas margens direita ou esquerda ficam no final
-        self.__dados__.sort(key = lambda box:(box['pagina'], box['ordem_extra'], box['box_xyla'][1], box['box_xyla'][0]))
+        self.__dados__.sort(key = lambda box:(box['pagina'], box['ordem_extra'], box['ordem_y']))
+
         # análise do tipo e ajustes do número do box dentro da página pela ordenação
         nbox = 0
         for i, box in enumerate(self.__dados__):
@@ -265,7 +275,20 @@ class AnaliseImagensOCR():
             # análise dos tipos - leva em consideração a posição do box 
             # - precisa ocorrer depois da ordenação
             self.__analisar_tipos__(box, margens)
-        # análise de petição de textos para identificação de cabeçalhos e rodapés
+
+        # finaliza a correção da ordenação pelos tipos encontrados para encontrar ordem em colunas 
+        # precisa dos tipos para corrigir - se houve correção, ajusta os ids
+        if self.corrige_posicionamento_colunas():
+           nbox = 0
+           for i, box in enumerate(self.__dados__):
+               if pagina != box['pagina']:
+                   nbox = 0
+                   pagina = box['pagina']
+               box['box'] = nbox
+               box['id'] = i
+               nbox += 1
+
+        # análise de repetição de textos para identificação de cabeçalhos e rodapés
         # leva em consideração os tipos já encontrados
         self.__analisar_repeticoes__()
         # ajuste final - limpeza do que não é necessário
@@ -278,6 +301,7 @@ class AnaliseImagensOCR():
 
         self.__paginas__ = pagina + 1
         self.__pagina__ = pagina 
+
         self.__enriquecidos__ = True
         #print('Enriquecimento concluído...')
 
@@ -382,9 +406,11 @@ class AnaliseImagensOCR():
            box['tipo_sugerido'] = 'Proporção e margem'
         # o box tem margem de citação e a margem direita é menor que a esquerda
         # pois pode ser um título centralizado
+        # e não tem um box do lado esquerdo
         elif (x / pw  >= margens.MARGEM_CITACAO) \
              and (pw - x - w < x * 0.8) \
-             and box['qtd_linhas'] >= 1:
+             and box['qtd_linhas'] >= 1 \
+             and not self.__existe_box_esquerda__(box):
            box['tipo'] = 'CT'
            box['tipo_sugerido'] = 'Margem'
         # o box tem uma linha e a fonte é maior que a média da linhas * 1.15
@@ -465,6 +491,26 @@ class AnaliseImagensOCR():
             return False
         return True
 
+    def __existe_box_esquerda__(self, box):
+        ''' verifica se tem um box do lado esquerdo do box informado que não seja estampa para não indicá-lo como citação '''
+        x1, y1, w1, h1 = box['box_xyla']
+        for outro in self.__dados__:
+            # se o outro estiver na borda, ignora
+            if outro['box'] == box['box'] or any(outro['bordas']):
+               continue 
+            x2, y2, w2, h2 = outro['box_xyla']
+            # caixa 2 não está à esquerda
+            if x2 + w2 > x1:
+               continue 
+            # a caixa dois está acima
+            if y2 + h2 < y1:
+               continue 
+            # a caixa dois está abaixo
+            if y2 > y1 + h1:
+               continue 
+            return outro
+        return None
+            
     def __box_diferenca_termos__(self, box1, box2, diferenca):
         ''' diferença de até n termos '''
         if len(box1['palavras'] ^ box2['palavras']) > diferenca:
@@ -477,6 +523,97 @@ class AnaliseImagensOCR():
         print(f'{box1["box"]} e {box2["box"]} Distância: ', d1, d2, d, len(d) / len(d1+d2+d) )
         return (len(d) / len(d1+d2+d)) <= distancia
         '''
+
+    def corrige_posicionamento_colunas(self):
+        if len(self.__dados__) <= 2:
+           return False
+        # reordenação para ajuste de colunas
+        # a ideia é percorrer na ordem do último sort e verificar se vai para o próximo pela ordem posicional
+        # ou se quebra a ordem indo para o que está abaixo (a ordem posicional é x e depois y)
+        alterado = False
+        novos = []
+        disponiveis = self.__dados__
+        novos.append(disponiveis.pop(0))
+        while len(disponiveis) > 0:
+            # a próxima caixa é a próxima mesmo (anteriores[0])? ou busca a de baixo pelo eixo y na mesma página? 
+            anterior = novos[-1]
+            #print(f'Próximo para: {anterior["texto"][:30]}')
+            abaixo = self.__buscar_i_box_coluna_abaixo__(anterior, disponiveis)
+            if abaixo >= 0:
+               novos.append(disponiveis.pop(abaixo)) 
+               #print(f'- sugerido: {novos[-1]["texto"][:30]}')
+               alterado = True
+            else:
+               novos.append(disponiveis.pop(0))
+               #print(f'- natural: {novos[-1]["texto"][:30]}')
+        self.__dados__ = novos  
+        return alterado
+
+    def __buscar_i_box_coluna_abaixo__(self, atual, disponiveis):
+        if len(disponiveis) <= 1:
+            return -1
+        x1, y1, w1, h1 = atual['box_xyla']
+        # se a próxima não estiver ao lado direito, não tem o que analisar
+        # a ideia é descobrir se a próxima sendo ao lado direito a de baixo é a melhor opção
+        # por ser uma continuação da coluna
+        # se a próxima for cabeçalho, rodapé, estampa, etc, não tem o que analisar também pois a ordenação
+        # principal já cuidou disso
+        proxima = disponiveis[0]
+        if (proxima['pagina'] != atual['pagina']) or \
+            proxima['tipo'] in self.TIPOS_NAO_MIOLO or \
+            atual['tipo'] in self.TIPOS_NAO_MIOLO:
+            # a próxima está em outra página ou não faz parte do miolo de texto, segue a ordenação normal
+            #print('Saiu a', proxima['id'])
+            return -1
+        x2, y2, w2, h2 = proxima['box_xyla']
+        if x2 < (x1 + w1) * 1.05:
+           # a próxima não está ao lado, então segue o fluxo da ordenação
+           #print('Saiu b', proxima['id'])
+           return -1 
+        # a próxima está no lado direito? Identifica a margem máxima para a de baixo ser aceita
+        # como próxima no lugar dela
+        margem = x2 * .95
+        # busca se tem outro box na página abaixo do atual para continuar a coluna
+        # considera na margem se começar perto do x1 (5%) e terminar antes do box lateral (5%)
+        # se encontrar um box atravessado (maior que a largura ou além da largura, interrompe a busca)
+        # se encontrar um dentro da largura, é ele
+        # se encontrar nos lados, ignora pois são outras colunas ou estampas
+        for i, box in enumerate(disponiveis):
+            if i ==0:
+                # leva em conta o i, mas ignora pois já foi tratado como próximo
+                continue
+            if box['pagina'] != atual['pagina']:
+                #print('Saiu c', box['id'])
+                return -1
+            if box['bordas'] in self.TIPOS_NAO_MIOLO:
+                continue
+            x2, y2, w2, h2 = box['box_xyla']
+            # a caixa está além da margem analisada 
+            if x2 > margem:
+               continue
+            # a caixa está aquém do início x da atual (pode ser um título indicando fim dessa coluna, 
+            # prioriza terminar na coluna ao lado)
+            if x2 + w2 < x1 or x2 < x1 * .95:
+               # vai usar o fluxo normal que é a lateral
+               #print('Saiu 1', box['id'])
+               return -1 
+            # a caixa 2 está atravessada antes
+            if x2 < x1 and x2 + w2 > margem:
+               # vai usar o fluxo normal que é a lateral
+               #print('Saiu 2', box['id'])
+               return -1 
+            # a caixa 2 está atravessada depois
+            if x1 < margem and x2 + w2 > margem:
+               # vai usar o fluxo normal que é a lateral
+               #print('Saiu 3', box['id'])
+               return -1 
+            # a caixa 2 está na margem da caixa 1
+            # indica que é continuação da caixa anterior como coluna
+            if x2 >= x1 * .95 and x2 + w2 <= margem:
+               return i 
+        return -1
+
+
 
 ''' Recebe as dimensões da página e 
     busca o melhor padrão de página para as margens
@@ -545,8 +682,12 @@ if __name__ == '__main__':
     import os
     import json
 
+    DPIs = 400
+
     arquivo = ''
     arquivo_padrao = './exemplos/testes-extração.png'
+    arquivo_padrao = './exemplos/teste12345.pdf'
+    arquivo_padrao = './exemplos/Exemplo texto colunas.pdf'
     for i, arg in enumerate(sys.argv[1:]):
         print(f"- {arg}")
         if os.path.isfile(arg):
@@ -561,14 +702,17 @@ if __name__ == '__main__':
         print(f'Arquivo não encontrado: {arquivo}')
         exit()
     
+
     if str(arquivo).lower().endswith('.pdf'):
-       print('Não implementado') 
-       exit()
-    #imagem = cv2.imread(arq)
-    aimg = AnaliseImagensOCR(arquivo, file_2_grayscale = True)
+       from util_pdf_ocr import imagens_pdf
+       entrada = imagens_pdf(arquivo, dpi = DPIs )
+       aimg = AnaliseImagensOCR(entrada, file_2_grayscale = True)
+    else:
+       aimg = AnaliseImagensOCR(arquivo, file_2_grayscale = True)
     pasta, arquivo_nm = os.path.split(arquivo)
     arquivo_nm, _ = os.path.splitext(arquivo_nm)
     pasta = './temp/'
+    os.makedirs(pasta, exist_ok=True)
 
     arquivo_json = os.path.join(pasta, f'{arquivo_nm}.json')
     arquivo_imagem = os.path.join(pasta, f'{arquivo_nm}_ocr_?.png')
@@ -576,7 +720,7 @@ if __name__ == '__main__':
     with open(arquivo_json, 'w', encoding='utf8') as f:
         f.write(json.dumps(aimg.dados(), indent=2, ensure_ascii = True))
     
-    print('Lista de páginas: ', aimg.paginas())
+    #print('Lista de páginas: ', aimg.paginas())
     for p in aimg.paginas():
         print(f'Analisando página {p}', end='')
         img = aimg.imagem_pagina(p, True, True)

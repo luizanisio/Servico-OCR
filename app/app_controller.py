@@ -82,6 +82,7 @@ class Controller():
                                   'tipo' : 'pdf',
                                   'nome_real_pdf': nome_real,
                                   'tipo_real_pdf': tipo_real,
+                                  'finalizado_pdf' : False,
                                   'inicio_pdf': Util.data_hora_str(),
                                   'tamanho_inicial_pdf' : round(os.path.getsize(arquivo_entrada)/1024,2)}
                 print(f'Processar PDF "{arquivo_entrada}" >> "{destino}"')
@@ -101,6 +102,7 @@ class Controller():
                                   'tipo' : 'img',
                                   'nome_real_img': nome_real,
                                   'tipo_real_img': tipo_real,
+                                  'finalizado_img' : False,
                                   'inicio_img': Util.data_hora_str(),
                                   'tamanho_inicial_img' : round(os.path.getsize(arquivo_entrada)/1024,2)}
                 print(f'Processar IMG "{arquivo_entrada}" >> "{destino}"')

@@ -5,9 +5,9 @@
 - O objetivo é analisar qualidade, performance e regiões identificadas pelo Tesseract para permitir a criação de regras ou treinamento de modelos para identificar regiões como Citações, Estampas laterais, Cabeçalho e Rodapé. A identificação pode ser feita por regras simples, como margens em páginas padronizadas (A4, Carta, Legal etc). E também pode ser identificado por repetições de textos em áreas específicas, como cabeçalhos e rodapés.
 
 ## O que está disponível
-- Foi criado um serviço flask que recebe imagens ou PDFs e processa eles em batch, permitindo acompanhar a fila de tarefas e visualizar os arquivos da extração ou baixar uma versão Markdown ou PDF da análise realizada.
+- Foi criado um serviço flask que recebe imagens ou PDFs e processa eles em batch, permitindo acompanhar a fila de tarefas e visualizar os arquivos da extração (html) ou baixar uma versão Markdown ou PDF da análise realizada.
 - As regiões estão sendo identificadas por posicionamento (estampas e citações) ou repetição e posicionamento (cabeçalhos e rodapés).
-- A tela apresenta o motivo da identificação da região
+- A tela apresenta o motivo da identificação do tipo da região
 - Pode-se filtrar o retorno, removendo regiões não desejadas
 - O arquivo `config.json` contém configurações do serviço como o nome das pastas, DPIs para as análises, número de workers, dentre outros. Caso não exista, ele será criado com o padrão de cada configuração.
 - O campo `token` do serviço é usado para listar as tarefas do usuário, podendo ser digitado livremente ou será criado ao enviar um arquivo a primeira vez. A ideia é o usuário enviar vários arquivos no mesmo token. O usuário precisa dele para acompanhar as tarefas enviadas. Não é garantida a segurança com esse token, apenas restringe um pouco o livre acesso às tarefas entre usuários pois é só uma poc.
@@ -51,8 +51,8 @@
 ```
 
 ## TODO
-- análise de colunas (está identificando incorretamente como citação)
 - apresentação da análise feita nas imagens enviadas para o Tesseract
+  - em `util_ocr.py` tem um exemplo funcional, falta apresentar no serviço
 - exportação de trechos para fine tunning do Tesseract
 - acionamento por api para uso em outros projetos
 - criação de componente para reaproveitamento

@@ -23,7 +23,7 @@ from util_pdf_compress import compress_pdf
 from util import Util
 import numpy as np
 
-def imagens_pdf(arquivo_entrada='', dpi = 300, np_array = True):
+def imagens_pdf(arquivo_entrada='', dpi = 400, np_array = True):
     # extrair as imagens do PDF
     imagens = convert_from_path(arquivo_entrada, dpi=dpi)
     if np_array:

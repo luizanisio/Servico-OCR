@@ -135,7 +135,8 @@ def frm_visualizar_arquivo():
                 res = controller.processar_envio_arquivo(token = token,
                                                          exemplo_ou_request= exemplo or request,
                                                          gerar_img = gerar_img,
-                                                         gerar_pdf = gerar_pdf ) 
+                                                         gerar_pdf = gerar_pdf,
+                                                         ignorar_cache = ignorar_cache ) 
             listar = True
         
         elif id_arquivo and atualizar and status.get('finalizado_img'):

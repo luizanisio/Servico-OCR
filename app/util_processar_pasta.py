@@ -72,7 +72,7 @@ class ProcessarOcr():
     # configurações básicas do serviço
     # o arquivo é criado se não existir
     CONFIG_PADRAO = {"gerar_md" : True, "gerar_html" : True, 
-                     "resolucao_img" : 300, 
+                     "resolucao_img" : 400, 
                      "resolucao_pdf" : 300, 
                      "n_workers" : -1, "max_workers" : 0,
                      "entrada" : "./ocr_entrada", 

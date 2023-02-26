@@ -180,7 +180,8 @@ if __name__ == '__main__':
 
     arquivo = 'testes-extração.json'
     arquivo ='Artigo Seleção por consequências B F Skinner.json'
+    arquivo = './temp/Exemplo texto colunas.json'
 
-    arquivo_aimg_2_md(f'./temp/{arquivo}')
+    arquivo_aimg_2_md(f'{arquivo}')
 
     print('Finalizado')

@@ -176,7 +176,7 @@ def box_2_html(box):
        html = '\n'.join( Util.unir_paragrafos_quebrados(str(box['texto']).split('\n')) )
     return html
 
-def arquivo_aimg_2_html(arquivo_aimg):
+def arquivo_aimg_2_html(arquivo_aimg, reanalisar = False):
     if not arquivo_aimg:
        return 
     arquivo_html = os.path.splitext(arquivo_aimg)[0] + '.html'
@@ -204,7 +204,9 @@ if __name__ == '__main__':
 
     arquivo = 'testes-extração.json'
     arquivo ='Artigo Seleção por consequências B F Skinner.json'
+    arquivo = './temp/Exemplo texto colunas.json'
 
-    arquivo_aimg_2_html(f'./temp/{arquivo}')
+    arquivo_aimg_2_html(f'{arquivo}')
+
 
     print('Finalizado')
