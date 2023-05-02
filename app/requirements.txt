@@ -13,7 +13,7 @@ pdf2image==1.16.0
 filelock==3.8.0
 
 # serviço
-Flask==2.1.0 
+Flask==2.2.5
 Flask-Cors==3.0.10
 bootstrap-flask==2.0.2
 
