@@ -6,7 +6,7 @@ pytesseract==0.3.10
 opencv-python-headless==4.6.0.66
 
 # ler e gravar PDF
-PyPDF2==2.11.1
+PyPDF2==3.0.1
 pdf2image==1.16.0
 
 # utilitários
